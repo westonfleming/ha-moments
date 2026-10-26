@@ -2,6 +2,7 @@ import "./strategy/moments-dashboard-strategy";
 import "./cards/moments-chips";
 import "./cards/moments-intents";
 import "./cards/moments-on-now";
+import "./cards/moments-schedules";
 
 declare const __VERSION__: string;
 
@@ -16,6 +17,7 @@ window.customCards.push(
   { type: "moments-chips", name: "Moments chips", description: "Alerts that only appear when something needs you." },
   { type: "moments-intents", name: "Moments intents", description: "Scenes and scripts, ordered by time of day." },
   { type: "moments-on-now", name: "Moments on now", description: "Everything that is on or open right now." },
+  { type: "moments-schedules", name: "Moments schedules", description: "Quiet list of schedules; edit their time and days in place." },
 );
 
 console.info(`%c MOMENTS %c ${__VERSION__} `, "background:#e8930c;color:#fff;font-weight:700", "");
