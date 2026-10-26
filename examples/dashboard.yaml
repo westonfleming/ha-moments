@@ -1,0 +1,52 @@
+# Moments dashboard: every option, with examples.
+#
+# Paste into a new dashboard's Raw configuration editor
+# (Settings → Dashboards → your dashboard → ✎ → ⋮ → Raw configuration editor)
+# and replace the example entity ids with your own.
+# Every option is optional. `strategy: { type: custom:moments }` on its own works.
+
+strategy:
+  type: custom:moments
+
+  # Entity whose state is morning, day, evening or night. It drives the greeting
+  # and the intent order. Leave it out to use the clock (morning from 05:00,
+  # day from 11:00, evening from 17:00, night from 22:00).
+  # See time-of-day.yaml for a helper and automation that set it.
+  time_of_day_entity: input_select.time_of_day
+
+  # The "Do something" buttons. Leave it out to show your first eight scenes.
+  intents:
+    # entity: a scene, script, automation or button.
+    #   scene, script → turn_on; automation → trigger; button → press.
+    # name:  label on the button (defaults to the entity's name).
+    # icon:  any mdi: icon (defaults to the entity's icon).
+    # when:  times of day when this button moves to the front of the row.
+    - entity: scene.wake_up
+      name: Wake up
+      icon: mdi:weather-sunny
+      when: [morning]
+    - entity: script.leaving
+      name: Leaving
+      icon: mdi:door-open
+      when: [morning, day]
+    - entity: scene.cooking
+      name: Cooking
+      icon: mdi:chef-hat
+      when: [evening]
+    - entity: scene.movie
+      name: Movie
+      icon: mdi:movie-open
+      when: [evening, night]
+    - entity: script.bedtime     # scripts highlight while they run
+      name: Bedtime
+      icon: mdi:bed
+      when: [night]
+    - entity: button.doorbell_snapshot
+      name: Doorbell photo
+      icon: mdi:camera
+      # no `when`: keeps its place after the time-of-day buttons
+
+  # Media players that get a tile on Now while playing. Leave it out to use all.
+  media_players:
+    - media_player.living_room
+    - media_player.kitchen_speaker

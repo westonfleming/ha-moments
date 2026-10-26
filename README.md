@@ -56,7 +56,7 @@ strategy:
       when: [night]
 ```
 
-Replace the entities with your own scenes and scripts. The dashboard is generated each time it loads, so new devices and areas appear after a refresh with no editing.
+Replace the entities with your own scenes and scripts. [examples/dashboard.yaml](examples/dashboard.yaml) shows every option with comments. The dashboard is generated each time it loads, so new devices and areas appear after a refresh with no editing.
 
 ### Strategy options
 
@@ -69,7 +69,7 @@ Replace the entities with your own scenes and scripts. The dashboard is generate
 
 ### Optional: time-of-day helper
 
-Without a helper, the clock decides (morning 05:00, day 11:00, evening 17:00, night 22:00). To control it yourself, go to **Settings → Devices & services → Helpers → Create helper → Dropdown**, name it `time_of_day`, add the options `morning`, `day`, `evening` and `night`, and set it from an automation.
+Without a helper, the clock decides (morning 05:00, day 11:00, evening 17:00, night 22:00). To control it yourself, go to **Settings → Devices & services → Helpers → Create helper → Dropdown**, name it `time_of_day`, add the options `morning`, `day`, `evening` and `night`, and set it from an automation. [examples/time-of-day.yaml](examples/time-of-day.yaml) has a ready-made helper and automation.
 
 ## 3. Set it up on your iPhone and iPad
 
@@ -81,7 +81,7 @@ In the companion app on each device:
 
 ## Using the cards on their own
 
-The cards also work in any dashboard, from **Add card → Manual**:
+The cards also work in any dashboard, from **Add card → Manual**. All their options are in [examples/cards.yaml](examples/cards.yaml).
 
 ```yaml
 type: custom:moments-chips        # alerts that only appear when something needs you

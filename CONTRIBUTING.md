@@ -10,6 +10,10 @@ npm run typecheck
 
 To try a build on your Home Assistant, copy `dist/ha-moments.js` to `/config/www/`, then add `/local/ha-moments.js` as a JavaScript module under **Settings → Dashboards → ⋮ → Resources**.
 
+## Configuration
+
+Moments ships no home-specific behaviour. Anything particular to one install (entities, rooms, users, times) is a config option with a sensible default. When you add or change an option, update the annotated example in [examples/](examples/) and the README options table in the same PR.
+
 ## Release
 
 Publish a GitHub release (for example `v0.1.0`). The release workflow builds `ha-moments.js` and attaches it, which is what HACS installs.

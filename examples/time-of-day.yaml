@@ -1,0 +1,45 @@
+# Time-of-day helper for Moments, as a Home Assistant package.
+#
+# Option 1 (UI): Settings → Devices & services → Helpers → Create helper →
+#   Dropdown, name "Time of day", options morning, day, evening, night.
+#   Then create the automation below in the automation editor (⋮ → Edit in YAML).
+#
+# Option 2 (YAML): with `homeassistant: packages: !include_dir_named packages`
+#   in configuration.yaml, copy this file to /config/packages/time_of_day.yaml
+#   and restart.
+#
+# Then set `time_of_day_entity: input_select.time_of_day` in dashboard.yaml.
+
+input_select:
+  time_of_day:
+    name: Time of day
+    icon: mdi:clock-outline
+    options: [morning, day, evening, night]
+
+automation:
+  - id: moments_time_of_day
+    alias: Moments time of day
+    mode: restart
+    triggers:
+      # Change the times to suit your home, or swap in sun or presence triggers.
+      - trigger: time
+        at: "05:00:00"
+      - trigger: time
+        at: "11:00:00"
+      - trigger: time
+        at: "17:00:00"
+      - trigger: time
+        at: "22:00:00"
+      - trigger: homeassistant
+        event: start
+    actions:
+      - action: input_select.select_option
+        target:
+          entity_id: input_select.time_of_day
+        data:
+          option: >
+            {% set h = now().hour %}
+            {% if 5 <= h < 11 %}morning
+            {% elif 11 <= h < 17 %}day
+            {% elif 17 <= h < 22 %}evening
+            {% else %}night{% endif %}

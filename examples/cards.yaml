@@ -1,0 +1,29 @@
+# Moments cards on their own, in any dashboard.
+# Add card → Manual, then paste one block.
+
+# Alerts that only appear when something needs you: open doors and windows,
+# problem, moisture, smoke and gas sensors, and low batteries.
+type: custom:moments-chips
+battery_threshold: 15          # percent; batteries below this get a chip
+exclude:                       # entities that never get a chip
+  - binary_sensor.garage_side_door
+
+---
+# Everything that is on or open, with one-tap off and "All lights off".
+type: custom:moments-on-now
+domains: [light, switch, fan, cover]   # which kinds of entity to list
+exclude:
+  - switch.fridge
+
+---
+# Scene and script buttons, ordered by time of day.
+# Takes the same `intents` list as the dashboard (see dashboard.yaml).
+type: custom:moments-intents
+time_of_day_entity: input_select.time_of_day
+intents:
+  - entity: scene.movie
+    name: Movie
+    icon: mdi:movie-open
+    when: [evening, night]
+  - entity: script.bedtime
+    when: [night]
