@@ -201,7 +201,7 @@ export class MomentsIntents extends LitElement {
       }
       .intent.on {
         background: var(--moments-on);
-        color: color-mix(in srgb, var(--moments-on) 22%, black);
+        color: var(--moments-on-fg);
       }
       .text {
         display: flex;

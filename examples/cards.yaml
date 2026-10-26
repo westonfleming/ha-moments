@@ -2,11 +2,15 @@
 # Add card → Manual, then paste one block.
 
 # Alerts that only appear when something needs you: open doors and windows,
-# problem, moisture, smoke and gas sensors, and low batteries.
+# problem, moisture, smoke and gas sensors, low batteries, finished appliances.
 type: custom:moments-chips
 battery_threshold: 15          # percent; batteries below this get a chip
 exclude:                       # entities that never get a chip
   - binary_sensor.garage_side_door
+finished:
+  - entity: sensor.dishwasher_status
+    state: complete
+    name: Dishwasher
 
 ---
 # Everything that is on or open, with one-tap off and "All lights off".
@@ -16,10 +20,14 @@ exclude:
   - switch.fridge
 
 ---
-# Scene and script buttons, ordered by time of day.
+# Scene and script buttons, ordered by time of day and daylight.
 # Takes the same `intents` list as the dashboard (see dashboard.yaml).
 type: custom:moments-intents
 time_of_day_entity: input_select.time_of_day
+illuminance_entity: sensor.outdoor_motion_illuminance
+dark_below: 50
+area: living_room        # optional: only this room's intents
+include_house: true      # with area: also show house-level intents
 intents:
   - entity: scene.movie
     name: Movie
@@ -27,3 +35,40 @@ intents:
     when: [evening, night]
   - entity: script.bedtime
     when: [night]
+
+---
+# Greeting, time, weather and indoor temperature. Updates every minute.
+type: custom:moments-header
+time_of_day_entity: input_select.time_of_day
+illuminance_entity: sensor.outdoor_motion_illuminance   # adds "dark outside"
+weather_entity: weather.home
+temperature_entity: sensor.hallway_temperature
+area: kitchen                   # optional room label
+schedules_path: schedules       # optional: clock icon opening this view
+
+---
+# Scheduled automations you can adjust. Same schedule options as the
+# dashboard (see dashboard.yaml and schedules.yaml).
+type: custom:moments-schedules
+all: true                       # or `area: bedroom_1`; without either, house-level only
+schedules:
+  - name: Wake up
+    automation: automation.schedule_wake_up
+    time_entity: input_datetime.wake_up_time
+    area: bedroom_1
+  - name: Outside lights on
+    automation: automation.schedule_outside_lights_on
+    sun: sunset
+    offset_entity: input_number.outside_lights_offset
+
+---
+# One quiet summary line ("2 schedules · next 07:00") linking to a view.
+type: custom:moments-schedules
+area: bedroom_1
+summary: true
+path: schedules
+schedules:
+  - name: Wake up
+    automation: automation.schedule_wake_up
+    time_entity: input_datetime.wake_up_time
+    area: bedroom_1
