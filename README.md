@@ -107,4 +107,4 @@ intents:
 
 Remove the dashboard under **Settings → Dashboards**, then remove Moments in HACS (or delete `/config/www/ha-moments.js` and its resource for a manual install).
 
-Development notes are in [CONTRIBUTING.md](CONTRIBUTING.md).
+To deploy a test build and check it on your devices, see [TESTING.md](TESTING.md). Development notes are in [CONTRIBUTING.md](CONTRIBUTING.md).
