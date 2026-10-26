@@ -1,0 +1,196 @@
+# Example scripts for Moments intents, as a Home Assistant package.
+#
+# Copy to /config/packages/moments_scripts.yaml (with
+# `homeassistant: packages: !include_dir_named packages` in configuration.yaml)
+# or paste each script into the script editor (⋮ → Edit in YAML).
+# All names are made up: change the area ids, entities and thresholds.
+#
+# Light levels live here, in Home Assistant, not in the dashboard. That way the
+# same scripts work from the dashboard, automations, voice and widgets.
+
+input_boolean:
+  movie_mode:
+    name: Movie mode
+    icon: mdi:movie-open
+
+script:
+  # ── Room scripts shared by several areas ─────────────────────────────────
+  # Moments passes `area_id` when an intent with `areas:` is run from a room.
+
+  room_lights_up:
+    alias: Room lights up
+    icon: mdi:lightbulb-on
+    mode: parallel
+    fields:
+      area_id:
+        description: Area to light
+        required: true
+        selector:
+          area:
+    variables:
+      # Brightness follows the outdoor light: softer when it's dark outside.
+      lux: "{{ states('sensor.outdoor_motion_illuminance') | float(0) }}"
+      dim_below: 10
+      bright_above: 200
+      brightness: >
+        {% if lux < dim_below %}55{% elif lux < bright_above %}80{% else %}100{% endif %}
+      kelvin: "{{ 2700 if lux < dim_below else 4000 }}"
+    sequence:
+      - action: light.turn_on
+        target:
+          area_id: "{{ area_id }}"
+        data:
+          brightness_pct: "{{ brightness }}"
+          color_temp_kelvin: "{{ kelvin }}"
+          transition: 1
+
+  room_reading:
+    alias: Room reading
+    icon: mdi:book-open-variant
+    mode: parallel
+    fields:
+      area_id:
+        required: true
+        selector:
+          area:
+    sequence:
+      - action: light.turn_on
+        target:
+          area_id: "{{ area_id }}"
+        data:
+          brightness_pct: 70
+          color_temp_kelvin: 3000
+          transition: 2
+
+  room_wake_up:
+    alias: Room wake up
+    icon: mdi:weather-sunset-up
+    mode: parallel
+    fields:
+      area_id:
+        required: true
+        selector:
+          area:
+    variables:
+      dark: "{{ states('sensor.outdoor_motion_illuminance') | float(0) < 50 }}"
+    sequence:
+      # Lights only when it's still dark outside; open blinds either way.
+      - if: "{{ dark }}"
+        then:
+          - action: light.turn_on
+            target:
+              area_id: "{{ area_id }}"
+            data:
+              brightness_pct: 60
+              color_temp_kelvin: 3500
+              transition: 120
+      - action: cover.open_cover
+        target:
+          area_id: "{{ area_id }}"
+        continue_on_error: true
+
+  room_sleep:
+    alias: Room sleep
+    icon: mdi:bed
+    mode: parallel
+    fields:
+      area_id:
+        required: true
+        selector:
+          area:
+    sequence:
+      - action: light.turn_off
+        target:
+          area_id: "{{ area_id }}"
+        data:
+          transition: 10
+      - action: cover.close_cover
+        target:
+          area_id: "{{ area_id }}"
+        continue_on_error: true
+
+  room_focus:
+    alias: Room focus
+    icon: mdi:desk-lamp
+    mode: parallel
+    fields:
+      area_id:
+        required: true
+        selector:
+          area:
+    sequence:
+      - action: light.turn_on
+        target:
+          area_id: "{{ area_id }}"
+        data:
+          brightness_pct: 100
+          color_temp_kelvin: 5000
+
+  # ── Movie: set the room and stop light leaking in from next door ─────────
+
+  movie_time:
+    alias: Movie time
+    icon: mdi:movie-open
+    variables:
+      room: living_room
+      # Areas whose lights spill into the room. Change to suit your layout.
+      neighbours: [hallway, kitchen, stairs]
+    sequence:
+      - action: scene.turn_on
+        target:
+          entity_id: scene.living_room_movie
+        data:
+          transition: 3
+      - action: light.turn_off
+        target:
+          area_id: "{{ neighbours }}"
+        data:
+          transition: 3
+      - action: input_boolean.turn_on
+        target:
+          entity_id: input_boolean.movie_mode
+
+  # ── House-level ──────────────────────────────────────────────────────────
+
+  leaving:
+    alias: Leaving
+    icon: mdi:door-open
+    variables:
+      # Entities that stay on when everyone leaves.
+      keep_on: [switch.fridge_plug, light.porch]
+    sequence:
+      - action: light.turn_off
+        target:
+          entity_id: >
+            {{ states.light | map(attribute='entity_id')
+               | reject('in', keep_on) | list }}
+      - action: media_player.turn_off
+        target:
+          entity_id: all
+        continue_on_error: true
+      - action: input_boolean.turn_off
+        target:
+          entity_id: input_boolean.movie_mode
+
+  arriving:
+    alias: Arriving
+    icon: mdi:home-import-outline
+    sequence:
+      - if: "{{ states('sensor.outdoor_motion_illuminance') | float(0) < 50 }}"
+        then:
+          - action: script.room_lights_up
+            data:
+              area_id: hallway
+
+  everyone_asleep:
+    alias: Everyone asleep
+    icon: mdi:weather-night
+    sequence:
+      - action: light.turn_off
+        target:
+          entity_id: all
+        data:
+          transition: 5
+      - action: input_boolean.turn_off
+        target:
+          entity_id: input_boolean.movie_mode

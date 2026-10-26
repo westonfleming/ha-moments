@@ -2,51 +2,218 @@
 #
 # Paste into a new dashboard's Raw configuration editor
 # (Settings → Dashboards → your dashboard → ✎ → ⋮ → Raw configuration editor)
-# and replace the example entity ids with your own.
+# and replace the example ids with your own.
+#
 # Every option is optional. `strategy: { type: custom:moments }` on its own works.
+#
+# The example home is made up: three bedrooms, two offices, a living room,
+# kitchen, utility room, small spaces (stairs, landing, hallway, toilet) and
+# three outdoor areas. Area ids are the ones HA shows under
+# Settings → Areas, labels & zones (open an area; the id is in the URL).
 
 strategy:
   type: custom:moments
 
-  # Entity whose state is morning, day, evening or night. It drives the greeting
-  # and the intent order. Leave it out to use the clock (morning from 05:00,
-  # day from 11:00, evening from 17:00, night from 22:00).
-  # See time-of-day.yaml for a helper and automation that set it.
+  # ── Context ────────────────────────────────────────────────────────────────
+
+  # Entity whose state is morning, day, evening or night. It drives the
+  # greeting and which intents come first. Leave it out to use the clock
+  # (morning from 05:00, day from 11:00, evening from 17:00, night from 22:00).
+  # See time-of-day.yaml.
   time_of_day_entity: input_select.time_of_day
 
-  # The "Do something" buttons. Leave it out to show your first eight scenes.
+  # Outdoor light sensor in lux. Adds the `dark` and `bright` contexts, so
+  # intents can come first when it's dark outside. Moments never sets light
+  # levels itself; your scripts do (see scripts.yaml).
+  illuminance_entity: sensor.outdoor_motion_illuminance
+  dark_below: 50                     # lux; below this it is "dark"
+
+  # Header: weather and indoor temperature. Defaults to the first weather entity.
+  weather_entity: weather.home
+  temperature_entity: sensor.hallway_temperature
+
+  # ── Intents: the "Do something" buttons ────────────────────────────────────
+  #
+  # entity:  a scene, script, automation or button.
+  #          scene, script → turn on; automation → trigger; button → press.
+  # name:    label (defaults to the entity's name).
+  # label:   small second line, e.g. "Dim + music".
+  # icon:    any mdi: icon (defaults to the entity's icon).
+  # when:    contexts that move it to the front: morning, day, evening,
+  #          night, dark, bright.
+  # area:    makes it a room intent for one area.
+  # areas:   a room intent shared by several areas. Scripts run from a room
+  #          receive the variable `area_id`, so one script serves every room.
+  # active_entity: an entity whose "on" state marks the intent active.
+  #
+  # Intents without area/areas are house-level and show on Now.
+  # Room intents show in that room on the Rooms tab, and first on Now for a
+  # tablet mapped to that room (rooms_by_user).
+  # Leave intents out entirely to show your first eight scenes.
+
   intents:
-    # entity: a scene, script, automation or button.
-    #   scene, script → turn_on; automation → trigger; button → press.
-    # name:  label on the button (defaults to the entity's name).
-    # icon:  any mdi: icon (defaults to the entity's icon).
-    # when:  times of day when this button moves to the front of the row.
-    - entity: scene.wake_up
-      name: Wake up
-      icon: mdi:weather-sunny
-      when: [morning]
+    # House-level
     - entity: script.leaving
       name: Leaving
       icon: mdi:door-open
       when: [morning, day]
-    - entity: scene.cooking
-      name: Cooking
-      icon: mdi:chef-hat
+    - entity: script.arriving
+      name: Arriving
+      icon: mdi:home-import-outline
       when: [evening]
-    - entity: scene.movie
+    - entity: script.everyone_asleep
+      name: Goodnight
+      icon: mdi:weather-night
+      when: [night]
+
+    # Living room
+    - entity: scene.living_room_relax
+      name: Relax
+      icon: mdi:sofa
+      area: living_room
+      when: [evening]
+    - entity: scene.living_room_dinner
+      name: Dinner
+      label: Dim + music
+      icon: mdi:silverware-fork-knife
+      area: living_room
+      when: [evening]
+    - entity: script.movie_time       # turns off neighbouring rooms too
       name: Movie
       icon: mdi:movie-open
+      area: living_room
       when: [evening, night]
-    - entity: script.bedtime     # scripts highlight while they run
-      name: Bedtime
-      icon: mdi:bed
-      when: [night]
-    - entity: button.doorbell_snapshot
-      name: Doorbell photo
-      icon: mdi:camera
-      # no `when`: keeps its place after the time-of-day buttons
+      active_entity: input_boolean.movie_mode
 
-  # Media players that get a tile on Now while playing. Leave it out to use all.
+    # Every bedroom shares these. One area-aware script each (scripts.yaml).
+    - entity: script.room_lights_up
+      name: Lights up
+      icon: mdi:lightbulb-on
+      areas: [bedroom_1, bedroom_2, bedroom_3]
+      when: [dark]
+    - entity: script.room_reading
+      name: Reading
+      icon: mdi:book-open-variant
+      areas: [bedroom_1, bedroom_2, bedroom_3]
+      when: [evening, night]
+    - entity: script.room_wake_up
+      name: Wake up
+      icon: mdi:weather-sunset-up
+      areas: [bedroom_1, bedroom_2, bedroom_3]
+      when: [morning]
+    - entity: script.room_sleep
+      name: Sleep
+      icon: mdi:bed
+      areas: [bedroom_1, bedroom_2, bedroom_3]
+      when: [night]
+
+    # Both offices
+    - entity: script.room_focus
+      name: Focus
+      icon: mdi:desk-lamp
+      areas: [office_1, office_2]
+      when: [day]
+
+  # Media players that get a tile on Now while playing. Leave out to use all.
   media_players:
-    - media_player.living_room
+    - media_player.living_room_tv
     - media_player.kitchen_speaker
+
+  # ── Tablets ────────────────────────────────────────────────────────────────
+
+  # HA user id → area id. Signed in as that user, Now leads with that room
+  # ("This room": its intents and controls). Give each docked tablet its own
+  # HA user. User ids are under Settings → People → Users (open a user).
+  rooms_by_user:
+    0123456789abcdef0123456789abcdef: kitchen
+
+  # ── Rooms tab ──────────────────────────────────────────────────────────────
+
+  # Groups, in order. Leave out to group by HA floors.
+  room_groups:
+    - name: Downstairs
+      areas: [living_room, kitchen, utility_room, hallway, toilet]
+    - name: Upstairs
+      areas: [bedroom_1, bedroom_2, bedroom_3, office_1, office_2, stairs, landing]
+    - name: Outside
+      icon: mdi:tree
+      areas: [back_garden, front_garden, side_of_house]
+      show_on_now: true               # outside lights that are on appear in On now
+
+  # Areas left off the Rooms tab.
+  hide_areas: [garage_loft]
+
+  # Per-area options.
+  #   compact: one row of tiles. Default: on for areas with 3 or fewer entities.
+  #   domains: which kinds of entity to show.
+  #   exclude: entities to leave out.
+  areas:
+    stairs:
+      compact: true
+      domains: [light]
+    landing:
+      compact: true
+    hallway:
+      domains: [light, lock, binary_sensor]
+    kitchen:
+      exclude: [switch.kettle_plug]
+
+  # ── Schedules (secondary) ──────────────────────────────────────────────────
+  #
+  # Scheduled automations you can adjust from the dashboard. They never show
+  # on Now: they live on a Schedules page behind the clock icon, and as one
+  # quiet line at the bottom of their room. See schedules.yaml for the helpers
+  # and automations these point at.
+  #
+  # automation:    the automation that runs it; on/off enables it.
+  # time_entity:   input_datetime (time only) holding when it runs.
+  # days_entities: seven input_booleans, Monday first. Leave out for every day.
+  # sun + offset_entity: run at sunrise/sunset plus an input_number of minutes.
+  # area:          puts the summary line in that room.
+
+  schedules:
+    - name: Wake up
+      icon: mdi:alarm
+      automation: automation.schedule_wake_up
+      time_entity: input_datetime.wake_up_time
+      area: bedroom_1
+      days_entities:
+        - input_boolean.wake_up_mon
+        - input_boolean.wake_up_tue
+        - input_boolean.wake_up_wed
+        - input_boolean.wake_up_thu
+        - input_boolean.wake_up_fri
+        - input_boolean.wake_up_sat
+        - input_boolean.wake_up_sun
+    - name: Outside lights on
+      icon: mdi:outdoor-lamp
+      automation: automation.schedule_outside_lights_on
+      sun: sunset
+      offset_entity: input_number.outside_lights_offset
+    - name: Outside lights off
+      icon: mdi:outdoor-lamp
+      automation: automation.schedule_outside_lights_off
+      time_entity: input_datetime.outside_lights_off_time
+    - name: Bedtime
+      icon: mdi:bed-clock
+      automation: automation.schedule_bedtime
+      time_entity: input_datetime.bedtime_time
+
+  room_schedules: true                # set false to hide the line in rooms
+
+  # ── Card options ───────────────────────────────────────────────────────────
+
+  chips:
+    battery_threshold: 15             # percent
+    exclude: [binary_sensor.side_gate]
+    finished:                         # appliances that get a "finished" chip
+      - entity: sensor.dishwasher_status
+        state: complete
+        name: Dishwasher
+      - entity: sensor.washing_machine_status
+        state: finished
+    schedules_off_after_hours: 24     # opt-in: chip when a schedule is left off
+
+  on_now:
+    domains: [light, switch, fan, cover]
+    exclude: [switch.fridge_plug]

@@ -8,6 +8,8 @@ export const tokens = css`
     --moments-gap: 8px;
     --moments-on: var(--state-light-active-color, #e8930c);
     --moments-on-soft: color-mix(in srgb, var(--moments-on) 16%, transparent);
+    /* Text on the "on" accent: a dark shade of the accent, readable in light and dark themes. */
+    --moments-on-fg: color-mix(in srgb, var(--moments-on) 22%, black);
     --moments-alert: var(--error-color, #d9442e);
     --moments-alert-soft: color-mix(in srgb, var(--moments-alert) 14%, transparent);
     --moments-warn: var(--warning-color, #e8930c);

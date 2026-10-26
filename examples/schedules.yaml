@@ -1,0 +1,99 @@
+# Helpers and automations behind the `schedules:` in dashboard.yaml,
+# as a Home Assistant package. Copy to /config/packages/moments_schedules.yaml.
+#
+# Each schedule is an ordinary automation that reads its time and days from
+# helpers. Moments edits the helpers (time, days, offset) and turns the
+# automation on or off; it never changes the automation itself.
+# All names are made up.
+
+input_datetime:
+  wake_up_time:
+    name: Wake up time
+    has_date: false
+    has_time: true
+    initial: "07:00"
+  outside_lights_off_time:
+    name: Outside lights off time
+    has_date: false
+    has_time: true
+    initial: "23:30"
+  bedtime_time:
+    name: Bedtime
+    has_date: false
+    has_time: true
+    initial: "22:30"
+
+input_number:
+  outside_lights_offset:
+    name: Outside lights offset
+    unit_of_measurement: min
+    min: -120
+    max: 120
+    step: 5
+    initial: 0
+
+input_boolean:
+  wake_up_mon: { name: Wake up Monday, initial: true }
+  wake_up_tue: { name: Wake up Tuesday, initial: true }
+  wake_up_wed: { name: Wake up Wednesday, initial: true }
+  wake_up_thu: { name: Wake up Thursday, initial: true }
+  wake_up_fri: { name: Wake up Friday, initial: true }
+  wake_up_sat: { name: Wake up Saturday, initial: false }
+  wake_up_sun: { name: Wake up Sunday, initial: false }
+
+automation:
+  - id: schedule_wake_up
+    alias: Schedule wake up
+    triggers:
+      - trigger: time
+        at: input_datetime.wake_up_time
+    conditions:
+      # Only on the days switched on in the dashboard (Monday = 1).
+      - condition: template
+        value_template: >
+          {% set days = ['mon','tue','wed','thu','fri','sat','sun'] %}
+          {{ is_state('input_boolean.wake_up_' ~ days[now().isoweekday() - 1], 'on') }}
+    actions:
+      - action: script.room_wake_up
+        data:
+          area_id: bedroom_1
+
+  - id: schedule_outside_lights_on
+    alias: Schedule outside lights on
+    triggers:
+      # Fires every minute and checks against sunset + offset, so the offset
+      # can be changed from the dashboard without editing the automation.
+      - trigger: time_pattern
+        minutes: "*"
+    conditions:
+      - condition: template
+        value_template: >
+          {% set sunset = as_datetime(state_attr('sun.sun', 'next_setting')) | as_local %}
+          {% set at = sunset + timedelta(minutes=states('input_number.outside_lights_offset') | int(0)) %}
+          {{ now().strftime('%H:%M') == at.strftime('%H:%M') }}
+    actions:
+      - action: light.turn_on
+        target:
+          area_id: [back_garden, front_garden, side_of_house]
+
+  - id: schedule_outside_lights_off
+    alias: Schedule outside lights off
+    triggers:
+      - trigger: time
+        at: input_datetime.outside_lights_off_time
+    actions:
+      - action: light.turn_off
+        target:
+          area_id: [back_garden, front_garden, side_of_house]
+
+  - id: schedule_bedtime
+    alias: Schedule bedtime
+    triggers:
+      - trigger: time
+        at: input_datetime.bedtime_time
+    actions:
+      - action: light.turn_off
+        target:
+          area_id: [living_room, kitchen, hallway]
+        data:
+          transition: 30

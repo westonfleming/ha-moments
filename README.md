@@ -62,10 +62,23 @@ Replace the entities with your own scenes and scripts. [examples/dashboard.yaml]
 
 | Option | Default | Description |
 | --- | --- | --- |
-| `intents` | first 8 scenes | Buttons for the **Do something** row. Each has `entity` (scene, script, automation or button), and optional `name`, `icon` and `when`. |
-| `intents[].when` | none | Times of day (`morning`, `day`, `evening`, `night`) when this intent moves to the front. |
-| `time_of_day_entity` | local clock | An entity whose state is `morning`, `day`, `evening` or `night`, usually an `input_select` helper set by an automation. |
-| `media_players` | all | Media players to show on Now while playing. |
+| `intents` | first 8 scenes | Buttons for **Do something**. Each has `entity` (scene, script, automation or button) and optional `name`, `label`, `icon`, `when`, `area`/`areas`, `active_entity`. |
+| `intents[].when` | none | Contexts that move the intent to the front: `morning`, `day`, `evening`, `night`, and with a light sensor `dark`, `bright`. |
+| `intents[].area` / `areas` | house-level | Makes it a room intent. Scripts run from a room receive `area_id`, so one script can serve several rooms. |
+| `time_of_day_entity` | local clock | Entity whose state is `morning`, `day`, `evening` or `night`. |
+| `illuminance_entity` | none | Outdoor light sensor (lux). Enables the `dark` and `bright` contexts. |
+| `dark_below` | `50` | Lux below which it counts as dark. |
+| `weather_entity` | first weather entity | Weather shown in the header. |
+| `temperature_entity` | none | Indoor temperature shown in the header. |
+| `media_players` | all | Media players shown on Now while playing. |
+| `rooms_by_user` | none | HA user id to area id. That user's Now leads with **This room**. Use for docked tablets. |
+| `room_groups` | HA floors | Named, ordered groups of areas for the Rooms tab. `show_on_now: true` labels that group's "on" entities in On now. |
+| `hide_areas` | none | Areas left off the Rooms tab. |
+| `areas.<area_id>` | | Per-area `compact`, `domains` and `exclude`. Small areas are compact by default. |
+| `schedules` | none | Scheduled automations you can adjust (time, days, sunset offset, on/off). Shown on a Schedules page behind the clock icon, never on Now. |
+| `room_schedules` | `true` | Show a one-line schedule summary at the bottom of each room. |
+| `chips` | | `battery_threshold`, `exclude`, `finished` (appliances), `schedules_off_after_hours` (opt-in). |
+| `on_now` | | `domains`, `exclude`. |
 
 ### Optional: time-of-day helper
 
@@ -101,6 +114,19 @@ time_of_day_entity: input_select.time_of_day   # optional
 intents:
   - entity: scene.movie
     when: [evening]
+```
+
+```yaml
+type: custom:moments-header       # greeting, time, weather
+weather_entity: weather.home      # optional
+```
+
+```yaml
+type: custom:moments-schedules    # scheduled automations you can adjust
+schedules:
+  - name: Wake up
+    automation: automation.schedule_wake_up
+    time_entity: input_datetime.wake_up_time
 ```
 
 ## Uninstall
