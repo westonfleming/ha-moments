@@ -1,7 +1,7 @@
 import { LitElement, html, css, nothing } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { tokens } from "../styles/tokens";
-import { callWithFeedback, fireMoreInfo, haptic } from "../helpers";
+import { callWithFeedback, fireMoreInfo, haptic, navigate } from "../helpers";
 import {
   DAY_NAMES,
   activeDays,
@@ -112,8 +112,7 @@ export class MomentsSchedules extends LitElement {
     const path = this.config.path;
     if (!path) return;
     haptic(this, "selection");
-    history.pushState(null, "", path);
-    window.dispatchEvent(new CustomEvent("location-changed", { detail: { replace: false } }));
+    navigate(path);
   }
 
   private switch(on: boolean, label: string, onClick: () => void) {
