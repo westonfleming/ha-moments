@@ -89,7 +89,8 @@ describe("moments-header", () => {
     const el = document.createElement("moments-header") as MomentsHeader;
     expect(() => el.setConfig({ type: "x", weather_entity: "sensor.temp" })).toThrow(/weather/);
     expect(() => el.setConfig({ type: "x", dark_below: "dim" as any })).toThrow(/dark_below/);
-    expect(() => el.setConfig({ type: "x", schedules_path: "schedules" })).toThrow(/schedules_path/);
+    expect(() => el.setConfig({ type: "x", schedules_path: 5 as any })).toThrow(/schedules_path/);
+    expect(() => el.setConfig({ type: "x", schedules_path: "schedules" })).not.toThrow();
     expect(() => el.setConfig({ type: "x", ...MomentsHeader.getStubConfig() })).not.toThrow();
   });
 

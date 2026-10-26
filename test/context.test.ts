@@ -33,3 +33,12 @@ describe("daylight", () => {
     expect(currentContext(hass, { illuminance_entity: "sensor.lux" }, at(19))).toEqual(["evening", "dark"]);
   });
 });
+
+import { resolvePath } from "../src/helpers";
+
+describe("resolvePath", () => {
+  it("keeps absolute paths and resolves views within the dashboard", () => {
+    expect(resolvePath("/other/x", "/dash/now")).toBe("/other/x");
+    expect(resolvePath("schedules", "/dash-home/rooms")).toBe("/dash-home/schedules");
+  });
+});

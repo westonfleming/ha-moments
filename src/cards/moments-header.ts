@@ -1,7 +1,7 @@
 import { LitElement, html, css, nothing, type PropertyValues } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { tokens } from "../styles/tokens";
-import { haptic } from "../helpers";
+import { haptic, navigate } from "../helpers";
 import { greeting, timeOfDay } from "../context/time-of-day";
 import { daylight } from "../context/daylight";
 import type { HomeAssistant, LovelaceCardConfig } from "../types";
@@ -99,10 +99,6 @@ export const subtitleParts = (hass: HomeAssistant, config: HeaderConfig): string
   return parts;
 };
 
-export const navigate = (path: string) => {
-  history.pushState(null, "", path);
-  window.dispatchEvent(new CustomEvent("location-changed"));
-};
 
 const isEntityId = (v: unknown) => typeof v === "string" && /^[a-z0-9_]+\.[a-z0-9_]+$/.test(v);
 
@@ -141,8 +137,8 @@ export class MomentsHeader extends LitElement {
     ) {
       throw new Error("moments-header: rooms_by_user must map user ids to area ids");
     }
-    if (config.schedules_path !== undefined && (typeof config.schedules_path !== "string" || !config.schedules_path.startsWith("/"))) {
-      throw new Error("moments-header: schedules_path must be a path starting with /");
+    if (config.schedules_path !== undefined && typeof config.schedules_path !== "string") {
+      throw new Error("moments-header: schedules_path must be a path");
     }
     this.config = config;
   }

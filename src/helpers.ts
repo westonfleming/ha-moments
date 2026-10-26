@@ -54,3 +54,13 @@ export const callWithFeedback = async (
     toast(node, `Couldn't ${service.replace(/_/g, " ")}: ${err?.message ?? err}`);
   }
 };
+
+/** Resolves a view path: absolute paths as-is, others as a view of the current dashboard. */
+export const resolvePath = (path: string, pathname = location.pathname) =>
+  path.startsWith("/") ? path : `/${pathname.split("/")[1]}/${path}`;
+
+/** Navigates within the HA frontend. */
+export const navigate = (path: string) => {
+  history.pushState(null, "", resolvePath(path));
+  window.dispatchEvent(new CustomEvent("location-changed"));
+};
