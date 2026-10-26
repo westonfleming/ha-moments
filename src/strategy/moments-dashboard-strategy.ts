@@ -1,15 +1,7 @@
 import { areaOf, domainOf, isVisible } from "../helpers";
 import { greeting, timeOfDay } from "../context/time-of-day";
-import type { Intent } from "../cards/moments-intents";
 import type { HomeAssistant, LovelaceCardConfig } from "../types";
-
-export interface MomentsStrategyConfig {
-  type: "custom:moments";
-  intents?: Intent[];
-  time_of_day_entity?: string;
-  /** Media players to surface on Now while playing. Defaults to all. */
-  media_players?: string[];
-}
+import type { MomentsStrategyConfig } from "../config";
 
 const ROOM_DOMAINS = ["light", "cover", "climate", "fan", "media_player", "switch", "lock"];
 

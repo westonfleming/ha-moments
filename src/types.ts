@@ -24,6 +24,14 @@ export interface AreaRegistryEntry {
   area_id: string;
   name: string;
   floor_id?: string | null;
+  icon?: string | null;
+}
+
+export interface FloorRegistryEntry {
+  floor_id: string;
+  name: string;
+  level?: number | null;
+  icon?: string | null;
 }
 
 export interface HomeAssistant {
@@ -31,7 +39,10 @@ export interface HomeAssistant {
   entities: Record<string, EntityRegistryEntry>;
   devices: Record<string, DeviceRegistryEntry>;
   areas: Record<string, AreaRegistryEntry>;
-  user?: { id: string; name: string };
+  floors?: Record<string, FloorRegistryEntry>;
+  user?: { id: string; name: string; is_admin?: boolean };
+  locale?: { language: string; time_format?: "language" | "system" | "12" | "24" };
+  config?: { time_zone?: string; unit_system?: { temperature?: string } };
   callService(domain: string, service: string, data?: Record<string, any>): Promise<unknown>;
 }
 

@@ -4,14 +4,9 @@ import { tokens } from "../styles/tokens";
 import { domainOf, nameOf } from "../helpers";
 import { timeOfDay, type TimeOfDay } from "../context/time-of-day";
 import type { HomeAssistant, LovelaceCardConfig } from "../types";
+import type { Intent } from "../config";
 
-export interface Intent {
-  entity: string;
-  name?: string;
-  icon?: string;
-  /** Times of day when this intent moves to the front. */
-  when?: TimeOfDay[];
-}
+export type { Intent };
 
 interface IntentsConfig extends LovelaceCardConfig {
   intents: Intent[];

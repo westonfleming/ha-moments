@@ -26,3 +26,31 @@ export const fireMoreInfo = (node: HTMLElement, entityId: string) =>
   node.dispatchEvent(
     new CustomEvent("hass-more-info", { detail: { entityId }, bubbles: true, composed: true }),
   );
+
+export type HapticType = "success" | "warning" | "failure" | "light" | "medium" | "heavy" | "selection";
+
+/** Haptic feedback in the companion app (ignored in browsers). */
+export const haptic = (node: HTMLElement, type: HapticType = "light") =>
+  node.dispatchEvent(new CustomEvent("haptic", { detail: type, bubbles: true, composed: true }));
+
+/** Shows HA's toast at the bottom of the screen. */
+export const toast = (node: HTMLElement, message: string) =>
+  node.dispatchEvent(new CustomEvent("hass-notification", { detail: { message }, bubbles: true, composed: true }));
+
+/** Calls a service with haptics, and a toast if it fails. */
+export const callWithFeedback = async (
+  node: HTMLElement,
+  hass: HomeAssistant | undefined,
+  domain: string,
+  service: string,
+  data?: Record<string, any>,
+) => {
+  if (!hass) return;
+  haptic(node, "light");
+  try {
+    await hass.callService(domain, service, data);
+  } catch (err: any) {
+    haptic(node, "failure");
+    toast(node, `Couldn't ${service.replace(/_/g, " ")}: ${err?.message ?? err}`);
+  }
+};
