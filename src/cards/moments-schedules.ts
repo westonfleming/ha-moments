@@ -311,7 +311,7 @@ export class MomentsSchedules extends LitElement {
         width: 16px;
         height: 16px;
         border-radius: 50%;
-        background: var(--moments-tile);
+        background: var(--text-primary-color, #fff);
         box-shadow: 0 1px 2px rgb(0 0 0 / 0.3);
       }
       .switch.on .track {
