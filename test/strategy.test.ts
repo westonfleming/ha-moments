@@ -141,7 +141,7 @@ describe("Now view", () => {
       schedules_path: "schedules",
     });
     expect(header.cards[1]).toEqual({ type: "custom:moments-chips", battery_threshold: 15, schedules });
-    expect(doSomething.cards[1]).toMatchObject({ rooms_by_user: { u1: "lounge" }, dark_below: 30 });
+    expect(doSomething.cards[1]).toMatchObject({ dark_below: 30 }); expect(doSomething.cards[1].rooms_by_user).toBeUndefined();
     expect(onNow.cards[1]).toEqual({ type: "custom:moments-on-now", domains: ["light"], groups });
   });
 

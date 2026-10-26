@@ -116,7 +116,7 @@ export const nowView = (config: MomentsStrategyConfig, hass: HomeAssistant) => {
       cards: [
         heading("Do something", "mdi:gesture-tap"),
         ...(intents.length
-          ? [clean({ type: "custom:moments-intents", intents, rooms_by_user: config.rooms_by_user, ...contextOptions(config) })]
+          ? [clean({ type: "custom:moments-intents", intents, ...contextOptions(config) })]
           : []),
       ],
     },
