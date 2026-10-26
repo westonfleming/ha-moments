@@ -19,6 +19,8 @@ jobs:
       - run: npm run build
 
   hacs:
+    # HACS can only validate (and install) public repositories.
+    if: ${{ !github.event.repository.private }}
     runs-on: ubuntu-latest
     steps:
       - uses: hacs/action@main

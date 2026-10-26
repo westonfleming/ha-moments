@@ -13,6 +13,8 @@ Moments is a HACS **Dashboard** plugin. It ships one JavaScript file containing:
 
 ## Install
 
+HACS only installs public repositories. While this repo is private, use the manual install under **Develop**.
+
 1. In HACS, open the menu → **Custom repositories**, add `https://github.com/westonfleming/ha-moments` with type **Dashboard**.
 2. Install **Moments** and reload the browser (or the companion app).
 3. **Settings → Dashboards → Add dashboard → New dashboard from scratch**, open it, choose **Edit → Raw configuration editor**, and replace everything with:
