@@ -16,7 +16,9 @@ Pick one.
 1. Open the repo's **Actions** tab and click the latest green **Build** run for the branch you want to test (`main`, or a PR's branch).
 2. Under **Artifacts**, download **ha-moments**. It's a zip; unzip it to get `ha-moments.js`.
 
-**From a pre-release.** Publish a GitHub release with **Set as a pre-release** ticked and a tag such as `v0.1.0-beta.1`. The release workflow attaches `ha-moments.js` to it within a couple of minutes.
+**From HACS (simplest).** Moments is installed through HACS, so a new release shows as an update there. Download it, then reload. Skip step 2 below; HACS handles the file and the resource.
+
+**From a pre-release.** Publish a GitHub release with **Set as a pre-release** ticked and a tag such as `v0.1.0-beta.1`. The release workflow attaches `ha-moments.js` to it within a couple of minutes. HACS ignores pre-releases unless beta versions are enabled for Moments, so either enable them in HACS or install the file by hand (step 2).
 
 **From source.** `npm install && npm run build` gives `dist/ha-moments.js`.
 

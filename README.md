@@ -12,7 +12,7 @@ An intent-first Home Assistant dashboard for the iPhone and iPad companion apps.
 
 ### Option A: HACS (recommended)
 
-> HACS only installs from public repositories. Until this repo is public, use Option B.
+> HACS installs the latest full release. Pre-releases (betas) only show up after you enable beta versions for Moments in HACS.
 
 1. In Home Assistant, open **HACS**, then **⋮ → Custom repositories**.
 2. Add `https://github.com/westonfleming/ha-moments` with type **Dashboard**.
