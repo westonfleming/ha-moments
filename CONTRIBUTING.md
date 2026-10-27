@@ -17,3 +17,5 @@ Moments ships no home-specific behaviour. Anything particular to one install (en
 ## Release
 
 Publish a GitHub release (for example `v0.1.0`). The release workflow builds `ha-moments.js` and attaches it, which is what HACS installs.
+
+HACS only offers full releases by default. Use pre-releases (`v0.2.0-beta.1`) for test builds, and keep at least one full release, or HACS falls back to `main`, which has no built file and fails with "Repository structure ... is not compliant".
