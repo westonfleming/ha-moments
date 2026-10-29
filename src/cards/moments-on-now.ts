@@ -115,17 +115,24 @@ export class MomentsOnNow extends LitElement {
 
   private row(item: OnNowItem, showLabel: boolean) {
     const leaving = this.pending.has(item.entityId);
+    const cover = domainOf(item.entityId) === "cover";
+    const position = cover ? item.entity.attributes.current_position : undefined;
     return html`<div class="row ${leaving ? "leaving" : ""}">
       <button class="name" @click=${() => fireMoreInfo(this, item.entityId)}>
         <span class="dot"></span>
         <span class="text">
           <span class="title">${item.name}</span>
+          ${typeof position === "number" ? html`<span class="area">${position}%</span>` : nothing}
           ${showLabel && item.label ? html`<span class="area">· ${item.label}</span>` : nothing}
         </span>
       </button>
-      <button class="tog" aria-label="Turn off ${item.name}" ?disabled=${leaving} @click=${() => this.turnOff(item)}>
-        <span class="pill"></span>
-      </button>
+      ${cover
+        ? html`<button class="close" aria-label="Close ${item.name}" ?disabled=${leaving} @click=${() => this.turnOff(item)}>
+            Close
+          </button>`
+        : html`<button class="tog" aria-label="Turn off ${item.name}" ?disabled=${leaving} @click=${() => this.turnOff(item)}>
+            <span class="pill"></span>
+          </button>`}
     </div>`;
   }
 
@@ -230,6 +237,17 @@ export class MomentsOnNow extends LitElement {
         place-items: center;
         background: none;
         flex: none;
+      }
+      .close {
+        min-height: 44px;
+        padding: 0 4px 0 12px;
+        background: none;
+        color: var(--moments-muted);
+        font-size: 14px;
+        flex: none;
+      }
+      .leaving .close {
+        opacity: 0.5;
       }
       .pill {
         width: 40px;

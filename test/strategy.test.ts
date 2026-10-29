@@ -208,6 +208,11 @@ describe("Rooms view helpers", () => {
     expect(tileFeatures(hass, "switch.lounge_fan")).toEqual([]);
   });
 
+  it("gives blinds with a position a slider", () => {
+    const hass = fakeHass({ "cover.eve": ["open", { supported_features: 15, current_position: 40 }] });
+    expect(tileFeatures(hass, "cover.eve")).toEqual([{ type: "cover-position" }]);
+  });
+
   it("groups by floor level with floorless areas in Other", () => {
     const groups = areaGroups(home(), base);
     expect(groups.map((g) => [g.name, g.areas.map((a) => a.area_id)])).toEqual([
