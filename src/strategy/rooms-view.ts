@@ -68,13 +68,17 @@ const brightnessCapable = (hass: HomeAssistant, id: string) => {
   return !modes || modes.some((m) => m !== "onoff");
 };
 
+/** Cover supports SET_POSITION, so it can take a slider. */
+const positionCapable = (hass: HomeAssistant, id: string) =>
+  ((hass.states[id]?.attributes.supported_features ?? 0) & 4) !== 0;
+
 /** Tile feature for an entity, or none. */
 export const tileFeatures = (hass: HomeAssistant, id: string): LovelaceCardConfig[] => {
   switch (domainOf(id)) {
     case "light":
       return brightnessCapable(hass, id) ? [{ type: "light-brightness" }] : [];
     case "cover":
-      return [{ type: "cover-open-close" }];
+      return positionCapable(hass, id) ? [{ type: "cover-position" }] : [{ type: "cover-open-close" }];
     case "climate":
       return [{ type: "target-temperature" }];
     default:
