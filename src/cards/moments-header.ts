@@ -5,6 +5,9 @@ import { haptic, navigate } from "../helpers";
 import { greeting, timeOfDay } from "../context/time-of-day";
 import { daylight } from "../context/daylight";
 import type { HomeAssistant, LovelaceCardConfig } from "../types";
+import { formatTime } from "../format";
+
+export { formatTime };
 
 export interface HeaderConfig extends LovelaceCardConfig {
   time_of_day_entity?: string;
@@ -16,22 +19,6 @@ export interface HeaderConfig extends LovelaceCardConfig {
   rooms_by_user?: Record<string, string>;
   schedules_path?: string;
 }
-
-type Locale = HomeAssistant["locale"];
-
-/** The local time, honouring the HA profile's language and 12/24 hour setting. */
-export const formatTime = (date: Date, locale?: Locale): string => {
-  const format = locale?.time_format ?? "language";
-  const lang = format === "system" ? undefined : locale?.language;
-  const opts: Intl.DateTimeFormatOptions = { hour: "numeric", minute: "2-digit" };
-  if (format === "12") opts.hour12 = true;
-  if (format === "24") opts.hourCycle = "h23";
-  try {
-    return new Intl.DateTimeFormat(lang, opts).format(date);
-  } catch {
-    return new Intl.DateTimeFormat(undefined, opts).format(date);
-  }
-};
 
 const CONDITIONS: Record<string, string> = {
   "clear-night": "clear",
@@ -221,10 +208,10 @@ export class MomentsHeader extends LitElement {
       }
       h1 {
         margin: 2px 0 0;
-        font-size: clamp(30px, 8vw, 40px);
+        font-size: clamp(30px, 7vw, 44px);
         line-height: 1.1;
-        font-weight: 700;
-        letter-spacing: -0.02em;
+        font-weight: 800;
+        letter-spacing: -0.03em;
       }
       p {
         margin: 6px 0 0;

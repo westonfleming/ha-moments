@@ -92,42 +92,37 @@ In the companion app on each device:
 2. Tap your user name at the bottom of the sidebar to open your profile, and under **Dashboard** choose the new dashboard. This makes it the default on that device only.
 3. If a card shows "Custom element doesn't exist", go to the app's **Settings → Companion App → Debugging → Reset frontend cache**, then reopen the app.
 
-## Using the cards on their own
+## Build your own dashboard from the cards
 
-The cards also work in any dashboard, from **Add card → Manual**. All their options are in [examples/cards.yaml](examples/cards.yaml).
+The strategy above lays out the dashboard for you. To decide yourself which tabs exist and what goes on each, build a normal dashboard from the Moments cards instead, mixed with any stock cards. [examples/tabs.yaml](examples/tabs.yaml) is a ready-made start with **Now**, **Weather & climate** and **Status** tabs: create a new dashboard, open the **Raw configuration editor**, paste it, and replace the made-up ids. From then on you can edit it in the visual editor too.
 
-```yaml
-type: custom:moments-chips        # alerts that only appear when something needs you
-battery_threshold: 15             # optional, percent
-exclude: [binary_sensor.garage]   # optional
-```
+| Card | Shows | Needs |
+| --- | --- | --- |
+| `moments-header` | Greeting, time, weather, indoor temperature | A weather entity (optional) |
+| `moments-chips` | Alerts only when something needs you | Nothing |
+| `moments-intents` | Your scenes and scripts as large buttons, ordered by time of day | Scenes or scripts |
+| `moments-on-now` | Everything on or open, with one-tap off | Nothing |
+| `moments-schedules` | Scheduled automations you can adjust | See [examples/schedules.yaml](examples/schedules.yaml) |
+| `moments-weather` | Today in detail, then 7 days: condition icon, rain (mm), wind and gusts, low–high bar | A weather entity with a daily forecast |
+| `moments-temperatures` | Rooms and outside: now, today's range, trend, 24-hour chart | Temperature sensors |
+| `moments-daylight` | Today's outdoor light (log scale) against your dark line, and when it got dark | An outdoor lux sensor |
+| `moments-internet` | Online status, speeds, a 7-day chart and recent outages | Ping integration (online) and Speedtest integration (speeds) |
+| `moments-appliance` | Program, progress and finish time, then recent runs (with kWh from a plug) | E.g. the Home Connect integration |
 
-```yaml
-type: custom:moments-on-now       # everything that is on or open, with one-tap off
-domains: [light, switch, fan, cover]   # optional
-exclude: [switch.fridge]               # optional
-```
-
-```yaml
-type: custom:moments-intents      # scene and script buttons, ordered by time of day
-time_of_day_entity: input_select.time_of_day   # optional
-intents:
-  - entity: scene.movie
-    when: [evening]
-```
+Every option is in [examples/cards.yaml](examples/cards.yaml). The charts and logs read Home Assistant's history, which keeps 10 days by default. For a 30-day outage log or longer run history, raise it in `configuration.yaml`:
 
 ```yaml
-type: custom:moments-header       # greeting, time, weather
-weather_entity: weather.home      # optional
+recorder:
+  purge_keep_days: 90
 ```
 
-```yaml
-type: custom:moments-schedules    # scheduled automations you can adjust
-schedules:
-  - name: Wake up
-    automation: automation.schedule_wake_up
-    time_entity: input_datetime.wake_up_time
-```
+### The Moments theme
+
+The cards look right in any theme. To give the whole dashboard, stock cards included, the dark Moments look:
+
+1. Copy [themes/moments.yaml](themes/moments.yaml) to `/config/themes/moments.yaml`.
+2. Make sure `configuration.yaml` has `frontend:` → `themes: !include_dir_merge_named themes`, then restart once (later changes only need **Developer tools → Actions → `frontend.reload_themes`**).
+3. Set `theme: moments` on each view, as [examples/tabs.yaml](examples/tabs.yaml) does, or pick **Moments** as your theme in your profile.
 
 ## Uninstall
 

@@ -1,5 +1,8 @@
 import type { HassEntity, HomeAssistant } from "./types";
 
+/** A plausible entity id, e.g. sensor.example. */
+export const isEntityId = (v: unknown): v is string => typeof v === "string" && /^[a-z0-9_]+\.[a-z0-9_]+$/.test(v);
+
 export const domainOf = (entityId: string) => entityId.split(".")[0];
 
 export const nameOf = (entity: HassEntity) =>

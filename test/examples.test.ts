@@ -24,6 +24,12 @@ describe("examples", () => {
     for (const doc of parseAllDocuments(load("cards.yaml"))) setConfig(doc.toJS());
   });
 
+  it("every custom card in tabs.yaml is a valid config", () => {
+    const cards = customCards(parse(load("tabs.yaml")));
+    expect(cards.length).toBeGreaterThan(6);
+    for (const card of cards) expect(() => setConfig(card), card.type).not.toThrow();
+  });
+
   it("dashboard.yaml generates cards with valid configs", async () => {
     const { strategy } = parse(load("dashboard.yaml"));
     const hass = fakeHass(

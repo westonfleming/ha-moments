@@ -123,7 +123,7 @@ export class MomentsIntents extends LitElement {
       @contextmenu=${(e: Event) => e.preventDefault()}
       @click=${(e: Event) => this.onClick(e, intent, area)}
     >
-      <ha-icon .icon=${intent.icon ?? entity?.attributes.icon ?? "mdi:palette"}></ha-icon>
+      <span class="icon"><ha-icon .icon=${intent.icon ?? entity?.attributes.icon ?? "mdi:palette"}></ha-icon></span>
       <span class="text">
         <span class="name">${name}</span>
         ${intent.label ? html`<span class="label">${intent.label}</span>` : nothing}
@@ -172,7 +172,7 @@ export class MomentsIntents extends LitElement {
       }
       .intents {
         display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: var(--moments-gap);
       }
       .intent {
@@ -180,21 +180,21 @@ export class MomentsIntents extends LitElement {
         flex-direction: column;
         align-items: flex-start;
         justify-content: space-between;
-        gap: 6px;
-        padding: 10px;
+        gap: 10px;
+        padding: 14px;
         min-width: 0;
-        min-height: 72px;
+        min-height: 104px;
         border-radius: var(--moments-radius);
         background: var(--moments-tile);
         color: var(--moments-fg);
-        font-size: 0.8125rem;
-        font-weight: 600;
+        font-size: 1rem;
+        font-weight: 800;
         text-align: left;
         user-select: none;
         -webkit-user-select: none;
         -webkit-touch-callout: none;
         touch-action: manipulation;
-        transition: transform 0.12s ease, background-color 0.2s ease;
+        transition: transform 0.12s ease, background-color 0.2s ease, box-shadow 0.2s ease;
       }
       .intent:active {
         transform: scale(0.97);
@@ -202,10 +202,26 @@ export class MomentsIntents extends LitElement {
       .intent.on {
         background: var(--moments-on);
         color: var(--moments-on-fg);
+        box-shadow: 0 8px 24px color-mix(in srgb, var(--moments-on) 30%, transparent);
+      }
+      .icon {
+        display: grid;
+        place-items: center;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: var(--moments-raised);
+        color: var(--moments-on);
+        flex: none;
+      }
+      .intent.on .icon {
+        background: color-mix(in srgb, white 35%, transparent);
+        color: inherit;
       }
       .text {
         display: flex;
         flex-direction: column;
+        gap: 2px;
         min-width: 0;
         width: 100%;
       }
@@ -220,26 +236,30 @@ export class MomentsIntents extends LitElement {
       }
       .label {
         -webkit-line-clamp: 1;
-        font-size: 0.75rem;
-        font-weight: 500;
+        font-size: 0.8125rem;
+        font-weight: 600;
         color: var(--moments-muted);
       }
       .intent.on .label {
         color: inherit;
-        opacity: 0.8;
+        opacity: 0.75;
       }
       ha-icon {
         --mdc-icon-size: 20px;
       }
       @container (min-width: 520px) {
         .intents {
-          grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+          grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+          gap: 14px;
         }
         .intent {
-          gap: 10px;
-          padding: 14px;
-          min-height: 88px;
-          font-size: 0.9375rem;
+          padding: 18px;
+          min-height: 140px;
+          font-size: 1.1875rem;
+        }
+        .icon {
+          width: 44px;
+          height: 44px;
         }
         ha-icon {
           --mdc-icon-size: 22px;
