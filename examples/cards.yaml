@@ -72,3 +72,57 @@ schedules:
     automation: automation.schedule_wake_up
     time_entity: input_datetime.wake_up_time
     area: bedroom_1
+
+---
+# Today in detail, then the next days: condition icon, rain, wind and gusts,
+# and a low-to-high bar on one shared scale.
+type: custom:moments-weather
+entity: weather.home
+days: 7              # 0 to 7 days after today
+gust_warn: 50        # gusts at or above this are highlighted (entity's wind unit)
+
+---
+# Room and outdoor temperatures: now, today's range and trend, and a chart.
+type: custom:moments-temperatures
+title: Temperatures
+outside: sensor.outdoor_motion_temperature
+hours: 24            # chart length; 0 hides the chart
+rooms:
+  - entity: sensor.living_room_temperature
+    name: Living room
+  - sensor.bedroom_temperature
+
+---
+# Today's outdoor light on a log scale against the dark line, with when it
+# got dark or light. Use the same dark_below as your automations.
+type: custom:moments-daylight
+entity: sensor.outdoor_motion_illuminance
+dark_below: 50
+
+---
+# Internet status, speeds, a chart of download speed and recent outages.
+# online: a connectivity binary_sensor, e.g. from the Ping integration.
+type: custom:moments-internet
+online: binary_sensor.internet
+download: sensor.speedtest_download
+upload: sensor.speedtest_upload
+ping: sensor.speedtest_ping
+days: 7
+outage_days: 30
+max_outages: 5
+
+---
+# An appliance's program, progress and finish time, then its recent runs.
+# Entity names below follow the Home Connect integration.
+type: custom:moments-appliance
+name: Dishwasher
+status: sensor.dishwasher_operation_state
+progress: sensor.dishwasher_program_progress
+finish_time: sensor.dishwasher_program_finish_time
+program: select.dishwasher_active_program
+door: sensor.dishwasher_door
+energy: sensor.dishwasher_plug_energy    # optional: adds kWh per run
+running_states: [run, pause, delayedstart]
+finished_states: [finished]
+days: 14
+max_runs: 5

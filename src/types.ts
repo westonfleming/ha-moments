@@ -44,6 +44,12 @@ export interface HomeAssistant {
   locale?: { language: string; time_format?: "language" | "system" | "12" | "24" };
   config?: { time_zone?: string; unit_system?: { temperature?: string } };
   callService(domain: string, service: string, data?: Record<string, any>): Promise<unknown>;
+  /** One-off websocket command, e.g. history. */
+  callWS?<T>(msg: Record<string, any>): Promise<T>;
+  connection?: {
+    /** Websocket subscription; resolves to an unsubscribe function. */
+    subscribeMessage<T>(callback: (msg: T) => void, msg: Record<string, any>): Promise<() => Promise<void> | void>;
+  };
 }
 
 export interface LovelaceCardConfig {

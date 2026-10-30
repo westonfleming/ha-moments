@@ -1,0 +1,108 @@
+# A Moments dashboard built from the cards, one view per tab.
+# Settings → Dashboards → Add dashboard → New dashboard from scratch, then
+# ✎ → ⋮ → Raw configuration editor, and paste this. Replace the made-up ids.
+# Every card can also be added, moved and edited in the visual editor.
+views:
+  - title: Now
+    path: now
+    icon: mdi:home-clock
+    type: sections
+    max_columns: 2
+    theme: moments
+    sections:
+      - type: grid
+        column_span: 2
+        cards:
+          - type: custom:moments-header
+            weather_entity: weather.home
+            temperature_entity: sensor.living_room_temperature
+            illuminance_entity: sensor.outdoor_motion_illuminance
+          - type: custom:moments-chips
+            battery_threshold: 15
+            finished:
+              - entity: sensor.dishwasher_operation_state
+                state: finished
+                name: Dishwasher
+      - type: grid
+        cards:
+          - type: heading
+            heading: Moments
+          - type: custom:moments-intents
+            illuminance_entity: sensor.outdoor_motion_illuminance
+            intents:
+              - entity: scene.movie
+                name: Movie
+                icon: mdi:movie-open
+                when: [evening, night]
+              - entity: scene.dinner
+                name: Dinner
+                icon: mdi:silverware-fork-knife
+                when: [evening]
+              - entity: script.bedtime
+                name: Bedtime
+                icon: mdi:bed
+                when: [night]
+      - type: grid
+        cards:
+          - type: heading
+            heading: On now
+          - type: custom:moments-on-now
+
+  - title: Weather & climate
+    path: climate
+    icon: mdi:weather-partly-cloudy
+    type: sections
+    max_columns: 2
+    theme: moments
+    sections:
+      - type: grid
+        cards:
+          - type: custom:moments-weather
+            entity: weather.home
+            days: 7
+            gust_warn: 50          # km/h (the weather entity's unit)
+      - type: grid
+        cards:
+          - type: custom:moments-temperatures
+            outside: sensor.outdoor_motion_temperature
+            hours: 24
+            rooms:
+              - entity: sensor.living_room_temperature
+                name: Living room
+              - entity: sensor.office_temperature
+                name: Office
+              - entity: sensor.bedroom_temperature
+                name: Bedroom
+      - type: grid
+        column_span: 2
+        cards:
+          - type: custom:moments-daylight
+            entity: sensor.outdoor_motion_illuminance
+            dark_below: 50
+
+  - title: Status
+    path: status
+    icon: mdi:list-status
+    type: sections
+    max_columns: 2
+    theme: moments
+    sections:
+      - type: grid
+        cards:
+          - type: custom:moments-internet
+            online: binary_sensor.internet           # Ping integration
+            download: sensor.speedtest_download     # Speedtest integration
+            upload: sensor.speedtest_upload
+            ping: sensor.speedtest_ping
+            days: 7
+            outage_days: 30
+      - type: grid
+        cards:
+          - type: custom:moments-appliance
+            name: Dishwasher
+            status: sensor.dishwasher_operation_state         # Home Connect
+            progress: sensor.dishwasher_program_progress
+            finish_time: sensor.dishwasher_program_finish_time
+            program: select.dishwasher_active_program
+            door: sensor.dishwasher_door
+            days: 14
