@@ -241,5 +241,8 @@ describe("cards", () => {
     expect(() => el.setConfig({ type: "custom:moments-weather", entity: "sensor.x" })).toThrow(/weather\.\* entity/);
     const t = document.createElement("moments-temperatures") as any;
     expect(() => t.setConfig({ type: "custom:moments-temperatures" })).toThrow(/outside or rooms/);
+    expect(() =>
+      t.setConfig({ type: "custom:moments-temperatures", rooms: ["sensor.a"], layout: "wide" }),
+    ).toThrow(/layout must be grid or row/);
   });
 });
