@@ -87,6 +87,7 @@ type: custom:moments-temperatures
 title: Temperatures
 outside: sensor.outdoor_motion_temperature
 hours: 24            # chart length; 0 hides the chart
+layout: grid         # or row: all tiles side by side, swipe if they do not fit
 rooms:
   - entity: sensor.living_room_temperature
     name: Living room

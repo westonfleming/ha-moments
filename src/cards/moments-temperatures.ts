@@ -20,6 +20,8 @@ interface TemperaturesConfig extends LovelaceCardConfig {
   rooms?: (string | RoomSensor)[];
   /** Hours shown on the chart. Default 24; 0 hides the chart. */
   hours?: number;
+  /** "grid" wraps tiles onto rows (default); "row" keeps them in one row, swiping sideways when they don't fit. */
+  layout?: "grid" | "row";
 }
 
 const SERIES = ["--moments-sun", "--moments-purple", "--moments-teal", "--moments-pink", "--moments-moon"];
@@ -66,6 +68,8 @@ export class MomentsTemperatures extends LitElement {
     if (!config.outside && !config.rooms?.length) throw new Error("moments-temperatures: add outside or rooms");
     if (config.hours !== undefined && (typeof config.hours !== "number" || config.hours < 0 || config.hours > 168))
       throw new Error("moments-temperatures: hours must be 0 to 168");
+    if (config.layout !== undefined && config.layout !== "grid" && config.layout !== "row")
+      throw new Error("moments-temperatures: layout must be grid or row");
     this.config = config;
   }
 
@@ -141,7 +145,7 @@ export class MomentsTemperatures extends LitElement {
     const showChart = (this.config.hours ?? 24) > 0;
     return html`<div class="panel">
       <div class="head"><h2>${this.config.title ?? "Temperatures"}</h2><span class="sub">Range is today</span></div>
-      <div class="tiles">
+      <div class="tiles ${this.config.layout === "row" ? "row" : ""}">
         ${lines.map((l) => {
           const e = this.hass!.states[l.entity];
           const current = Number(e?.state);
@@ -167,6 +171,20 @@ export class MomentsTemperatures extends LitElement {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
         gap: 10px;
+      }
+      .tiles.row {
+        grid-auto-flow: column;
+        grid-template-columns: none;
+        grid-auto-columns: minmax(130px, 1fr);
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        scrollbar-width: none;
+      }
+      .tiles.row::-webkit-scrollbar {
+        display: none;
+      }
+      .tiles.row .tile {
+        scroll-snap-align: start;
       }
       .tile {
         border-radius: var(--moments-inner-radius);
