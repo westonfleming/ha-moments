@@ -43,6 +43,9 @@ export interface HomeAssistant {
   user?: { id: string; name: string; is_admin?: boolean };
   locale?: { language: string; time_format?: "language" | "system" | "12" | "24" };
   config?: { time_zone?: string; unit_system?: { temperature?: string } };
+  themes?: { darkMode?: boolean };
+  /** HA's own state formatting (translated, with units). Present in HA 2023.9+. */
+  formatEntityState?(stateObj: HassEntity, state?: string): string;
   callService(domain: string, service: string, data?: Record<string, any>): Promise<unknown>;
   /** One-off websocket command, e.g. history. */
   callWS?<T>(msg: Record<string, any>): Promise<T>;

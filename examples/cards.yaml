@@ -127,3 +127,43 @@ running_states: [run, pause, delayedstart]
 finished_states: [finished]
 days: 14
 max_runs: 5
+
+---
+# One device with a Moments icon that follows its state. Only entity is required.
+type: custom:moments-tile
+entity: light.kitchen
+
+---
+# A dishwasher with its programme, a progress bar and the finish time.
+# `states` maps the appliance's own words onto the icon's states
+# (dishwasher: running, on, off). Anything missing is left out.
+type: custom:moments-tile
+entity: sensor.dishwasher_operation_state
+icon_set: dishwasher
+name: Dishwasher
+states:
+  running: [Run, DelayedStart]
+  on: [Ready, Finished]
+secondary: sensor.dishwasher_program
+progress: sensor.dishwasher_program_progress
+finish: sensor.dishwasher_program_finish_time
+
+---
+# A smart plug with power and energy on the state line, on a glass surface.
+type: custom:moments-tile
+entity: switch.coffee_machine
+icon_set: plug
+metrics:
+  - sensor.coffee_machine_power
+  - sensor.coffee_machine_energy_today
+surface: glass        # solid | frosted | glass (default: the theme's moments-tile-surface)
+opacity: 0.4          # 0 to 1, how much card colour shows
+blur: 26              # px
+
+---
+# A blind: its icon steps in 10% increments and glides between them.
+# progress: position adds its position as a bar.
+type: custom:moments-tile
+entity: cover.office_blind
+progress: position
+icon_style: crisp     # glow (default) | crisp
