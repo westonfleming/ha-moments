@@ -12,6 +12,8 @@ import "./cards/moments-appliance";
 import "./cards/moments-tile";
 import "./cards/moments-metric";
 import "./cards/moments-area-header";
+import "./cards/moments-room";
+import "./cards/moments-floor-heading";
 
 declare const __VERSION__: string;
 
@@ -35,6 +37,8 @@ window.customCards.push(
   { type: "moments-tile", name: "Moments tile", description: "One device with a state-aware Moments icon, its state and optional progress." },
   { type: "moments-metric", name: "Moments metric", description: "One reading, value first, with a status word and an optional sparkline." },
   { type: "moments-area-header", name: "Moments area header", description: "Top of an area view: presence, readings, alerts and an all-lights switch." },
+  { type: "moments-room", name: "Moments room", description: "A room for the home view: presence, temperature, lights and alerts over a faded photo." },
+  { type: "moments-floor-heading", name: "Moments floor heading", description: "A floor's name and a summary of its rooms." },
   { type: "moments-appliance", name: "Moments appliance", description: "Program progress, finish time and recent runs." },
 );
 

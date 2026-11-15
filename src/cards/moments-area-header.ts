@@ -7,10 +7,10 @@ import { callWithFeedback, fireMoreInfo, isEntityId, nameOf } from "../helpers";
 import { DEFAULT_LEVELS, GLYPH, kindOf, levelFor, discoverArea, presenceText, type MetricKind } from "../metrics";
 import type { HomeAssistant, LovelaceCardConfig } from "../types";
 
-type Stat = "temperature" | "humidity" | "air" | "illuminance";
+export type Stat = "temperature" | "humidity" | "air" | "illuminance";
 const STATS: Stat[] = ["temperature", "humidity", "air", "illuminance"];
 
-interface AreaHeaderConfig extends LovelaceCardConfig, SurfaceConfig {
+export interface AreaHeaderConfig extends LovelaceCardConfig, SurfaceConfig {
   /** Area id. Readings, presence, lights and alerts are found in it unless set below. */
   area: string;
   name?: string;
@@ -81,6 +81,22 @@ export const headerModel = (hass: HomeAssistant, c: AreaHeaderConfig, now = Date
   };
 };
 
+/** Checks the options shared by cards that describe an area. */
+export const validateAreaOptions = (card: string, config: Partial<AreaHeaderConfig>) => {
+  if (!config || typeof config.area !== "string" || !config.area) throw new Error(`${card}: area must be an area id`);
+  for (const key of ["temperature", "humidity", "air", "illuminance", "presence"] as const) {
+    const v = config[key];
+    if (v !== undefined && v !== false && !isEntityId(v)) throw new Error(`${card}: ${key} must be an entity id or false`);
+  }
+  for (const key of ["lights", "alerts"] as const) {
+    const v = config[key];
+    if (v !== undefined && v !== false && !(Array.isArray(v) && v.every(isEntityId)))
+      throw new Error(`${card}: ${key} must be a list of entity ids or false`);
+  }
+  if (config.show !== undefined && !(Array.isArray(config.show) && config.show.every((s) => STATS.includes(s))))
+    throw new Error(`${card}: show must list some of ${STATS.join(", ")}`);
+};
+
 /** The banner at the top of an area view: who's there, the room's readings, alerts and an all-lights switch. */
 @customElement("moments-area-header")
 export class MomentsAreaHeader extends LitElement {
@@ -92,18 +108,7 @@ export class MomentsAreaHeader extends LitElement {
   }
 
   setConfig(config: AreaHeaderConfig) {
-    if (!config || typeof config.area !== "string" || !config.area) throw new Error("moments-area-header: area must be an area id");
-    for (const key of ["temperature", "humidity", "air", "illuminance", "presence"] as const) {
-      const v = config[key];
-      if (v !== undefined && v !== false && !isEntityId(v)) throw new Error(`moments-area-header: ${key} must be an entity id or false`);
-    }
-    for (const key of ["lights", "alerts"] as const) {
-      const v = config[key];
-      if (v !== undefined && v !== false && !(Array.isArray(v) && v.every(isEntityId)))
-        throw new Error(`moments-area-header: ${key} must be a list of entity ids or false`);
-    }
-    if (config.show !== undefined && !(Array.isArray(config.show) && config.show.every((s) => STATS.includes(s))))
-      throw new Error(`moments-area-header: show must list some of ${STATS.join(", ")}`);
+    validateAreaOptions("moments-area-header", config);
     validateSurface("moments-area-header", config);
     this.config = config;
   }

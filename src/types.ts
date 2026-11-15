@@ -25,6 +25,8 @@ export interface AreaRegistryEntry {
   name: string;
   floor_id?: string | null;
   icon?: string | null;
+  /** Path of the area's picture, e.g. /api/image/serve/…/original. */
+  picture?: string | null;
 }
 
 export interface FloorRegistryEntry {
