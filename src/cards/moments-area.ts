@@ -11,7 +11,7 @@ import type { HomeAssistant } from "../types";
 export type ImageStyle = "wash" | "edge" | "full" | "none";
 const IMAGE_STYLES: ImageStyle[] = ["wash", "edge", "full", "none"];
 
-export interface RoomConfig extends AreaHeaderConfig {
+export interface AreaCardConfig extends AreaHeaderConfig {
   /** Picture URL. Default: the area's own picture. false hides it. */
   image?: string | false;
   /** How the photo sits behind the content. Default wash. */
@@ -24,35 +24,35 @@ export interface RoomConfig extends AreaHeaderConfig {
   navigation_path?: string | false;
 }
 
-/** The photo URL for a room, or undefined when there is none or it's turned off. */
-export const roomImage = (hass: HomeAssistant, c: RoomConfig): string | undefined => {
+/** The photo URL for an area, or undefined when there is none or it's turned off. */
+export const areaImage = (hass: HomeAssistant, c: AreaCardConfig): string | undefined => {
   if (c.image === false || c.image_style === "none") return undefined;
   return c.image ?? hass.areas[c.area]?.picture ?? undefined;
 };
 
 const cssUrl = (u: string) => `url("${u.replace(/["\\\n]/g, (ch) => encodeURIComponent(ch))}")`;
 
-/** A room on the home view: name, presence, temperature, lights on and alerts, over an optional faded photo. Taps open the area's view. */
-@customElement("moments-room")
-export class MomentsRoom extends LitElement {
+/** An area on the home view: name, presence, temperature, lights on and alerts, over an optional faded photo. Taps open the area's view. */
+@customElement("moments-area")
+export class MomentsArea extends LitElement {
   @property({ attribute: false }) hass?: HomeAssistant;
-  @state() private config!: RoomConfig;
+  @state() private config!: AreaCardConfig;
 
   static getStubConfig(hass: HomeAssistant) {
     return { area: Object.keys(hass?.areas ?? {})[0] ?? "living_room" };
   }
 
-  setConfig(config: RoomConfig) {
-    validateAreaOptions("moments-room", config);
+  setConfig(config: AreaCardConfig) {
+    validateAreaOptions("moments-area", config);
     if (config.image !== undefined && config.image !== false && typeof config.image !== "string")
-      throw new Error("moments-room: image must be a URL or false");
+      throw new Error("moments-area: image must be a URL or false");
     if (config.image_style !== undefined && !IMAGE_STYLES.includes(config.image_style))
-      throw new Error(`moments-room: image_style must be one of ${IMAGE_STYLES.join(", ")}`);
+      throw new Error(`moments-area: image_style must be one of ${IMAGE_STYLES.join(", ")}`);
     const s = config.image_strength;
-    if (s !== undefined && (typeof s !== "number" || s < 0 || s > 1)) throw new Error("moments-room: image_strength must be between 0 and 1");
+    if (s !== undefined && (typeof s !== "number" || s < 0 || s > 1)) throw new Error("moments-area: image_strength must be between 0 and 1");
     if (config.navigation_path !== undefined && config.navigation_path !== false && typeof config.navigation_path !== "string")
-      throw new Error("moments-room: navigation_path must be a path or false");
-    validateSurface("moments-room", config);
+      throw new Error("moments-area: navigation_path must be a path or false");
+    validateSurface("moments-area", config);
     this.config = config;
   }
 
@@ -78,7 +78,7 @@ export class MomentsRoom extends LitElement {
     const c = this.config;
     const m = headerModel(this.hass, { ...c, show: ["temperature"] });
     const temp = m.stats[0];
-    const img = roomImage(this.hass, c);
+    const img = areaImage(this.hass, c);
     const style = img ? c.image_style ?? "wash" : "none";
     const empty = m.presence ? !m.presence.on : false;
     const dim = empty && c.dim_when_empty !== false;

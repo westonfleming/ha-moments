@@ -104,7 +104,7 @@ export const validateAreaOptions = (card: string, config: Partial<AreaHeaderConf
     throw new Error(`${card}: show must list some of ${STATS.join(", ")}`);
 };
 
-/** The banner at the top of an area view: who's there, the room's readings, alerts and an all-lights switch. */
+/** The banner at the top of an area view: who's there, the area's readings, alerts and an all-lights switch. */
 @customElement("moments-area-header")
 export class MomentsAreaHeader extends LitElement {
   @property({ attribute: false }) hass?: HomeAssistant;

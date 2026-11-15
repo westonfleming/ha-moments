@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import "../src/ha-moments";
-import { roomImage, type MomentsRoom } from "../src/cards/moments-room";
+import { areaImage, type MomentsArea } from "../src/cards/moments-area";
 import { areasOnFloor, floorSummary, type MomentsFloorHeading } from "../src/cards/moments-floor-heading";
 import { fakeHass } from "./fake-hass";
 
@@ -57,9 +57,9 @@ describe("floors", () => {
   });
 });
 
-describe("moments-room", () => {
+describe("moments-area", () => {
   const make = async (config: Record<string, any>) => {
-    const el = document.createElement("moments-room") as MomentsRoom;
+    const el = document.createElement("moments-area") as MomentsArea;
     el.setConfig({ type: "x", ...config } as any);
     el.hass = house();
     document.body.appendChild(el);
@@ -67,7 +67,7 @@ describe("moments-room", () => {
     return el;
   };
   it("rejects bad config", () => {
-    const el = document.createElement("moments-room") as MomentsRoom;
+    const el = document.createElement("moments-area") as MomentsArea;
     expect(() => el.setConfig({ type: "x" } as any)).toThrow(/area/);
     expect(() => el.setConfig({ type: "x", area: "a", image_style: "blur" } as any)).toThrow(/image_style/);
     expect(() => el.setConfig({ type: "x", area: "a", image_strength: 3 } as any)).toThrow(/image_strength/);
@@ -75,13 +75,13 @@ describe("moments-room", () => {
   });
   it("uses the area picture unless overridden or off", () => {
     const hass = house();
-    expect(roomImage(hass, { type: "x", area: "living" })).toBe("/api/image/serve/abc/original");
-    expect(roomImage(hass, { type: "x", area: "living", image: "/local/x.jpg" })).toBe("/local/x.jpg");
-    expect(roomImage(hass, { type: "x", area: "living", image: false })).toBeUndefined();
-    expect(roomImage(hass, { type: "x", area: "living", image_style: "none" })).toBeUndefined();
-    expect(roomImage(hass, { type: "x", area: "kitchen" })).toBeUndefined();
+    expect(areaImage(hass, { type: "x", area: "living" })).toBe("/api/image/serve/abc/original");
+    expect(areaImage(hass, { type: "x", area: "living", image: "/local/x.jpg" })).toBe("/local/x.jpg");
+    expect(areaImage(hass, { type: "x", area: "living", image: false })).toBeUndefined();
+    expect(areaImage(hass, { type: "x", area: "living", image_style: "none" })).toBeUndefined();
+    expect(areaImage(hass, { type: "x", area: "kitchen" })).toBeUndefined();
   });
-  it("washes the photo at 30% by default and shows the room", async () => {
+  it("washes the photo at 30% by default and shows the area", async () => {
     const el = await make({ area: "living" });
     const r = el.shadowRoot!;
     expect(r.querySelector("ha-card")!.className).toContain("wash");
@@ -91,7 +91,7 @@ describe("moments-room", () => {
     expect(r.querySelector(".chip")!.textContent).toContain("2 of 2 on");
     el.remove();
   });
-  it("greys an empty room and shows its alert", async () => {
+  it("greys an empty area and shows its alert", async () => {
     const el = await make({ area: "kitchen", image: "/local/k.jpg", image_style: "full" });
     const card = el.shadowRoot!.querySelector("ha-card")!;
     expect(card.className).toContain("full");
@@ -112,13 +112,13 @@ describe("moments-room", () => {
   });
 });
 
-describe("room alerts", () => {
-  it("raises high CO₂ even though the room shows only temperature", async () => {
+describe("area alerts", () => {
+  it("raises high CO₂ even though the card shows only temperature", async () => {
     const hass = fakeHass(
       { "sensor.co2": ["1400", { device_class: "carbon_dioxide" }] },
       { areas: { bed: { area_id: "bed", name: "Bedroom" } }, entities: { "sensor.co2": { entity_id: "sensor.co2", area_id: "bed" } } },
     );
-    const el = document.createElement("moments-room") as MomentsRoom;
+    const el = document.createElement("moments-area") as MomentsArea;
     el.setConfig({ type: "x", area: "bed" } as any);
     el.hass = hass;
     document.body.appendChild(el);

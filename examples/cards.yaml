@@ -202,22 +202,22 @@ show: [temperature, air]
 surface: glass
 
 ---
-# A room on the home view. The photo is the area's picture, washed at 30%.
+# An area on the home view. The photo is the area's picture, washed at 30%.
 # Taps open the view whose path is the area id.
-type: custom:moments-room
+type: custom:moments-area
 area: living_room
 
 ---
-type: custom:moments-room
+type: custom:moments-area
 area: office
-image: /local/rooms/office.jpg
+image: /local/areas/office.jpg
 image_style: edge        # wash (default) | edge | full | none
 image_strength: 0.4      # 0 to 1, wash and edge only
 dim_when_empty: false
 navigation_path: study   # false turns off the tap
 
 ---
-# A floor's name and a summary of its rooms.
+# A floor's name and a summary of its areas.
 type: custom:moments-floor-heading
 floor: downstairs
 

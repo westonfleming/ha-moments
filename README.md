@@ -101,7 +101,7 @@ The strategy above lays out the dashboard for you. To decide yourself which tabs
 | `moments-tile` | One device: a state-aware Moments icon, name and state, plus optional programme, metrics, progress bar and finish time | Any entity |
 | `moments-metric` | One reading, value first: number, status word (e.g. CO₂ Good, Humidity Comfortable, temperature trend) and a sparkline | A sensor |
 | `moments-area-header` | Top of an area view: name, presence, temperature, humidity, air and light chips, red alert chips and an all-lights switch | An area |
-| `moments-room` | A room for the home view: name, presence, temperature, lights on and alerts, over a faded photo. Taps open the area's view | An area |
+| `moments-area` | An area for the home view: name, presence, temperature, lights on and alerts, over a faded photo. Taps open the area's view | An area |
 | `moments-floor-heading` | A floor's name and "2 occupied · 5 lights on · 21.2° avg" | A floor (or a list of areas) |
 | `moments-header` | Greeting, time, weather, indoor temperature | A weather entity (optional) |
 | `moments-chips` | Alerts only when something needs you | Nothing |
@@ -154,9 +154,9 @@ Everything beyond `entity` is optional, and anything a device can't report is si
 
 `moments-area-header` needs only `area`. It finds the area's temperature, humidity, air quality, light and presence sensors, its lights and its leak, smoke, gas and problem sensors. Set any of `temperature`, `humidity`, `air`, `illuminance` or `presence` to another entity, or to `false` to hide it. `lights` and `alerts` take a list or `false`, and `show` picks which readings appear and in what order. Alerts and high CO₂ appear as red chips. Both cards take the same `surface`, `opacity` and `blur` as tiles.
 
-### Rooms and floors
+### Areas and floors
 
-`moments-room` takes the same `area` options as the area header. Its photo is the area's picture from **Settings → Areas**, or set `image` to any URL (`false` hides it). The photo is faded so the text stays readable:
+`moments-area` takes the same `area` options as the area header. Its photo is the area's picture from **Settings → Areas**, or set `image` to any URL (`false` hides it). The photo is faded so the text stays readable:
 
 | Option | What it does |
 | --- | --- |

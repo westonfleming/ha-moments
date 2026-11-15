@@ -48,7 +48,7 @@ export const floorSummary = (hass: HomeAssistant, areaIds: string[], now = Date.
   return parts.join(" · ");
 };
 
-/** A floor's title and a one-line summary of its rooms, for grouping room cards on a home view. */
+/** A floor's title and a one-line summary of its areas, for grouping area cards on a home view. */
 @customElement("moments-floor-heading")
 export class MomentsFloorHeading extends LitElement {
   @property({ attribute: false }) hass?: HomeAssistant;
