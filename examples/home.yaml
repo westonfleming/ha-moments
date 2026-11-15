@@ -1,0 +1,122 @@
+# A home view of areas grouped by floor, and one area view that every area copies.
+# Settings → Dashboards → Add dashboard → New dashboard from scratch, then
+# ✎ → ⋮ → Raw configuration editor, and paste this. Replace the made-up ids.
+#
+# Floors and area pictures come from Settings → Areas, labels & zones.
+# An area card opens the view whose path is its area id, so give each area
+# view `path: <area id>` (or set navigation_path on the card).
+views:
+  # ---- Home: one section per floor. Side by side on an iPad, stacked on an iPhone.
+  - title: Home
+    path: home
+    icon: mdi:home
+    type: sections
+    max_columns: 3
+    theme: moments
+    sections:
+      - type: grid
+        cards:
+          - type: custom:moments-floor-heading
+            floor: downstairs
+          - type: custom:moments-area
+            area: living_room          # photo: the area's picture, washed at 30%
+          - type: custom:moments-area
+            area: kitchen
+          - type: custom:moments-area
+            area: hallway
+      - type: grid
+        cards:
+          - type: custom:moments-floor-heading
+            floor: upstairs
+          - type: custom:moments-area
+            area: bedroom
+          - type: custom:moments-area
+            area: office
+            image_style: edge          # wash | edge | full | none
+          - type: custom:moments-area
+            area: bathroom
+      - type: grid
+        cards:
+          - type: custom:moments-floor-heading
+            floor: outside
+          - type: custom:moments-area
+            area: garden
+          - type: custom:moments-area
+            area: driveway
+
+  # ---- An area view. Every area uses the same sections in the same order:
+  # header, Lighting, Climate & air, Windows & doors, Devices.
+  # Leave out a section the area has nothing for.
+  - title: Living room
+    path: living_room
+    icon: mdi:sofa
+    type: sections
+    max_columns: 3
+    theme: moments
+    subview: true                       # reached from its area card; adds a back arrow
+    sections:
+      - type: grid
+        column_span: 3
+        cards:
+          - type: custom:moments-area-header
+            area: living_room
+
+      - type: grid
+        cards:
+          - type: heading
+            heading: Lighting
+            icon: mdi:lightbulb-group
+          - type: custom:moments-tile
+            entity: light.living_room_ceiling
+          - type: custom:moments-tile
+            entity: light.living_room_floor_lamp
+          - type: custom:moments-intents
+            area: living_room
+            intents:
+              - entity: scene.living_room_relax
+                name: Relax
+                when: [evening]
+              - entity: scene.movie
+                name: Movie
+                when: [evening, night]
+
+      - type: grid
+        cards:
+          - type: heading
+            heading: Climate & air
+            icon: mdi:thermometer
+          - type: custom:moments-tile
+            entity: climate.living_room
+            grid_options: { columns: 12 }
+          - type: custom:moments-metric
+            entity: sensor.living_room_temperature
+          - type: custom:moments-metric
+            entity: sensor.living_room_humidity
+          - type: custom:moments-metric
+            entity: sensor.living_room_co2
+          - type: custom:moments-metric
+            entity: sensor.living_room_illuminance
+            sparkline: false
+
+      - type: grid
+        cards:
+          - type: heading
+            heading: Windows & doors
+            icon: mdi:blinds
+          - type: custom:moments-tile
+            entity: cover.living_room_blind
+            progress: position
+          - type: custom:moments-tile
+            entity: binary_sensor.patio_door
+
+      - type: grid
+        cards:
+          - type: heading
+            heading: Devices
+            icon: mdi:television
+          - type: custom:moments-tile
+            entity: switch.living_room_tv_plug
+            icon_set: plug
+            metrics: [sensor.living_room_tv_plug_power]
+          - type: custom:moments-tile
+            entity: fan.living_room

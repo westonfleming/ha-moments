@@ -16,7 +16,7 @@ export interface HeaderConfig extends LovelaceCardConfig {
   weather_entity?: string;
   temperature_entity?: string;
   area?: string;
-  rooms_by_user?: Record<string, string>;
+  areas_by_user?: Record<string, string>;
   schedules_path?: string;
 }
 
@@ -64,9 +64,9 @@ export const formatWeather = (hass: HomeAssistant, weatherEntity?: string, tempe
   return parts.join(" · ");
 };
 
-/** The room this header speaks for: `area`, else the current user's room. */
-export const roomLabel = (hass: HomeAssistant, config: HeaderConfig): string | undefined => {
-  const areaId = config.area ?? (hass.user ? config.rooms_by_user?.[hass.user.id] : undefined);
+/** The area this header speaks for: `area`, else the current user's area. */
+export const areaLabel = (hass: HomeAssistant, config: HeaderConfig): string | undefined => {
+  const areaId = config.area ?? (hass.user ? config.areas_by_user?.[hass.user.id] : undefined);
   if (!areaId) return undefined;
   return hass.areas?.[areaId]?.name ?? areaId;
 };
@@ -75,11 +75,11 @@ export const roomLabel = (hass: HomeAssistant, config: HeaderConfig): string | u
 export const greetingLine = (hass: HomeAssistant | undefined, config: HeaderConfig, now = new Date()) =>
   greeting(timeOfDay(hass, config.time_of_day_entity, now));
 
-/** Everything under the greeting: room, temperatures, weather and "dark outside". */
+/** Everything under the greeting: area, temperatures, weather and "dark outside". */
 export const subtitleParts = (hass: HomeAssistant, config: HeaderConfig): string[] => {
   const parts: string[] = [];
-  const room = roomLabel(hass, config);
-  if (room) parts.push(room);
+  const area = areaLabel(hass, config);
+  if (area) parts.push(area);
   const weather = formatWeather(hass, config.weather_entity, config.temperature_entity);
   if (weather) parts.push(weather);
   if (daylight(hass, config.illuminance_entity, config.dark_below) === "dark") parts.push("dark outside");
@@ -119,10 +119,10 @@ export class MomentsHeader extends LitElement {
       throw new Error("moments-header: area must be an area id");
     }
     if (
-      config.rooms_by_user !== undefined &&
-      (typeof config.rooms_by_user !== "object" || config.rooms_by_user === null || Array.isArray(config.rooms_by_user))
+      config.areas_by_user !== undefined &&
+      (typeof config.areas_by_user !== "object" || config.areas_by_user === null || Array.isArray(config.areas_by_user))
     ) {
-      throw new Error("moments-header: rooms_by_user must map user ids to area ids");
+      throw new Error("moments-header: areas_by_user must map user ids to area ids");
     }
     if (config.schedules_path !== undefined && typeof config.schedules_path !== "string") {
       throw new Error("moments-header: schedules_path must be a path");

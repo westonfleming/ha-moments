@@ -1,4 +1,4 @@
-# Helpers and automations behind the `schedules:` in dashboard.yaml,
+# Helpers and automations behind the `schedules:` of moments-schedules and moments-chips,
 # as a Home Assistant package. Copy to /config/packages/moments_schedules.yaml.
 #
 # Each schedule is an ordinary automation that reads its time and days from

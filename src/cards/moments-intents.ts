@@ -15,14 +15,14 @@ interface IntentsConfig extends LovelaceCardConfig {
   illuminance_entity?: string;
   dark_below?: number;
   area?: string;
-  rooms_by_user?: Record<string, string>;
+  areas_by_user?: Record<string, string>;
   include_house?: boolean;
 }
 
 const LONG_PRESS_MS = 500;
 const MOVE_TOLERANCE = 10;
 
-/** "What do you want to do" buttons, scoped to a room or the house and ordered by context. */
+/** "What do you want to do" buttons, scoped to an area or the house and ordered by context. */
 @customElement("moments-intents")
 export class MomentsIntents extends LitElement {
   @property({ attribute: false }) hass?: HomeAssistant;
@@ -135,7 +135,7 @@ export class MomentsIntents extends LitElement {
     if (!this.hass || !this.config) return nothing;
     void this.tick;
     const c = this.config;
-    const userArea = this.hass.user ? c.rooms_by_user?.[this.hass.user.id] : undefined;
+    const userArea = this.hass.user ? c.areas_by_user?.[this.hass.user.id] : undefined;
     const tags = currentContext(this.hass, c);
     const groups = intentGroups(c.intents, { area: c.area, userArea, includeHouse: c.include_house }).map((g) => ({
       ...g,

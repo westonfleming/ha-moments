@@ -8,7 +8,7 @@ import { WidthController, extent, linePoints, linear, niceTicks } from "../chart
 import { rangeSince, trend } from "../climate";
 import type { HomeAssistant, LovelaceCardConfig } from "../types";
 
-interface RoomSensor {
+interface IndoorSensor {
   entity: string;
   name?: string;
 }
@@ -17,7 +17,7 @@ interface TemperaturesConfig extends LovelaceCardConfig {
   title?: string;
   /** Outdoor temperature sensor, shown first and in blue. */
   outside?: string;
-  rooms?: (string | RoomSensor)[];
+  indoor?: (string | IndoorSensor)[];
   /** Hours shown on the chart. Default 24; 0 hides the chart. */
   hours?: number;
   /** "grid" wraps tiles onto rows (default); "row" keeps them in one row, swiping sideways when they don't fit. */
@@ -38,7 +38,7 @@ interface Line {
   outside: boolean;
 }
 
-/** Room and outdoor temperatures: now, today's range and trend, and a chart of the last day. */
+/** Indoor and outdoor temperatures: now, today's range and trend, and a chart of the last day. */
 @customElement("moments-temperatures")
 export class MomentsTemperatures extends LitElement {
   @property({ attribute: false }) hass?: HomeAssistant;
@@ -51,21 +51,21 @@ export class MomentsTemperatures extends LitElement {
       .filter(([, e]) => e.attributes.device_class === "temperature")
       .map(([id]) => id)
       .slice(0, 4);
-    return { rooms: temps.length ? temps : ["sensor.living_room_temperature"] };
+    return { indoor: temps.length ? temps : ["sensor.living_room_temperature"] };
   }
 
   setConfig(config: TemperaturesConfig) {
     if (!config) throw new Error("moments-temperatures: missing configuration");
     if (config.outside !== undefined && !isEntityId(config.outside))
       throw new Error("moments-temperatures: outside must be an entity id");
-    if (config.rooms !== undefined) {
-      if (!Array.isArray(config.rooms)) throw new Error("moments-temperatures: rooms must be a list");
-      for (const r of config.rooms) {
+    if (config.indoor !== undefined) {
+      if (!Array.isArray(config.indoor)) throw new Error("moments-temperatures: indoor must be a list");
+      for (const r of config.indoor) {
         const id = typeof r === "string" ? r : r?.entity;
-        if (!isEntityId(id)) throw new Error("moments-temperatures: each room needs a sensor entity id");
+        if (!isEntityId(id)) throw new Error("moments-temperatures: each indoor entry needs a sensor entity id");
       }
     }
-    if (!config.outside && !config.rooms?.length) throw new Error("moments-temperatures: add outside or rooms");
+    if (!config.outside && !config.indoor?.length) throw new Error("moments-temperatures: add outside or indoor");
     if (config.hours !== undefined && (typeof config.hours !== "number" || config.hours < 0 || config.hours > 168))
       throw new Error("moments-temperatures: hours must be 0 to 168");
     if (config.layout !== undefined && config.layout !== "grid" && config.layout !== "row")
@@ -85,12 +85,12 @@ export class MomentsTemperatures extends LitElement {
     const lines: Line[] = [];
     if (this.config.outside)
       lines.push({ entity: this.config.outside, name: "Outside", color: "var(--moments-blue)", outside: true });
-    (this.config.rooms ?? []).forEach((r, i) => {
-      const room = typeof r === "string" ? { entity: r } : r;
-      const e = this.hass?.states[room.entity];
+    (this.config.indoor ?? []).forEach((r, i) => {
+      const s = typeof r === "string" ? { entity: r } : r;
+      const e = this.hass?.states[s.entity];
       lines.push({
-        entity: room.entity,
-        name: room.name ?? (e ? nameOf(e) : room.entity),
+        entity: s.entity,
+        name: s.name ?? (e ? nameOf(e) : s.entity),
         color: `var(${SERIES[i % SERIES.length]})`,
         outside: false,
       });

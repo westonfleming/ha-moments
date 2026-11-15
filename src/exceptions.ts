@@ -1,6 +1,6 @@
 // Pure logic behind the chips and On now cards.
 
-import type { FinishedEntity, RoomGroup, Schedule } from "./config";
+import type { FinishedEntity, AreaGroup, Schedule } from "./config";
 import { areaOf, domainOf, isVisible, nameOf } from "./helpers";
 import type { HassEntity, HomeAssistant } from "./types";
 
@@ -87,7 +87,7 @@ export const chipsFor = (hass: HomeAssistant, config: ChipsOptions = {}, now: Da
 export interface OnNowOptions {
   domains?: string[];
   exclude?: string[];
-  groups?: RoomGroup[];
+  groups?: AreaGroup[];
 }
 
 export interface OnNowItem {

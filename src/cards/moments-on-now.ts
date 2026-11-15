@@ -3,13 +3,13 @@ import { customElement, property, state } from "lit/decorators.js";
 import { tokens } from "../styles/tokens";
 import { callWithFeedback, domainOf, fireMoreInfo } from "../helpers";
 import { groupOnNow, onNowFor, type OnNowItem } from "../exceptions";
-import type { RoomGroup } from "../config";
+import type { AreaGroup } from "../config";
 import type { HomeAssistant, LovelaceCardConfig } from "../types";
 
 interface OnNowConfig extends LovelaceCardConfig {
   domains?: string[];
   exclude?: string[];
-  groups?: RoomGroup[];
+  groups?: AreaGroup[];
 }
 
 const GROUP_ABOVE = 6;

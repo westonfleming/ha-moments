@@ -1,88 +1,51 @@
 # Moments
 
-An intent-first Home Assistant dashboard for the iPhone and iPad companion apps. The front door is a single **Now** screen: what needs you, what you probably want to do next, and what is on. Rooms stay one tab away.
+Building blocks for Home Assistant dashboards on the iPhone and iPad companion apps. Moments adds cards, animated device icons, a theme and backdrops. You compose them into your own dashboards, views and sections, mixed with any stock cards. Moments does not create a dashboard for you.
+
+A good place to start is a **Home** view of your areas grouped by floor, each opening an **area view** that follows the same sections in every area. [examples/home.yaml](examples/home.yaml) has both, ready to paste.
 
 ## Requirements
 
 - Home Assistant 2025.1 or newer
-- [HACS](https://hacs.xyz) (for the HACS install)
 - The Home Assistant companion app on iPhone or iPad (any browser works too)
 
 ## 1. Install
 
-### Option A: HACS (recommended)
+### Option A: from Home Assistant
 
-> HACS installs the latest full release. Pre-releases (betas) only show up after you enable beta versions for Moments in HACS.
+1. Add `https://github.com/westonfleming/ha-moments` as a custom repository of type **Dashboard**, then find **Moments** and choose **Download**.
+2. Reload the page when asked. The dashboard resource is added for you.
 
-1. In Home Assistant, open **HACS**, then **⋮ → Custom repositories**.
-2. Add `https://github.com/westonfleming/ha-moments` with type **Dashboard**.
-3. Search HACS for **Moments**, open it, and choose **Download**.
-4. Reload the page when HACS asks. HACS adds the dashboard resource for you.
+Only full releases show up by default. Pre-releases (betas) appear once you enable beta versions for Moments.
 
 ### Option B: Manual
 
 1. Download `ha-moments.js` from the latest [release](https://github.com/westonfleming/ha-moments/releases).
 2. Copy it to `/config/www/ha-moments.js` on your Home Assistant (the **File editor** or **Samba share** add-on both work on an HA Green). Create the `www` folder if it doesn't exist, then restart Home Assistant once so it serves the folder.
 3. Go to **Settings → Dashboards → ⋮ → Resources → Add resource**. If you don't see Resources, turn on **Advanced mode** in your user profile first.
-4. Enter URL `/local/ha-moments.js?v=0.1.0`, type **JavaScript module**, and save.
+4. Enter URL `/local/ha-moments.js?v=0.3.0`, type **JavaScript module**, and save.
 
 To update a manual install, replace the file and bump the `?v=` number in the resource URL so the apps fetch the new version.
 
-## 2. Create the dashboard
+## 2. Compose a dashboard
 
-1. Go to **Settings → Dashboards → Add dashboard → New dashboard from scratch**. Name it (for example "Home") and open it.
-2. Choose **✎ Edit → ⋮ → Raw configuration editor**, replace everything with the YAML below, and save.
+1. In **Settings → Areas, labels & zones**, put your areas on floors (for example Downstairs, Upstairs and Outside) and give each area a picture if you like.
+2. Go to **Settings → Dashboards → Add dashboard → New dashboard from scratch**, name it and open it.
+3. Choose **✎ Edit → ⋮ → Raw configuration editor**, paste [examples/home.yaml](examples/home.yaml), replace the made-up ids, and save. From then on the visual editor works too.
 
-```yaml
-strategy:
-  type: custom:moments
-  time_of_day_entity: input_select.time_of_day   # optional
-  intents:
-    - entity: scene.morning
-      name: Wake up
-      icon: mdi:weather-sunny
-      when: [morning]
-    - entity: scene.cooking
-      name: Cooking
-      icon: mdi:chef-hat
-      when: [evening]
-    - entity: scene.movie
-      name: Movie
-      icon: mdi:movie-open
-      when: [evening, night]
-    - entity: script.bedtime
-      name: Bedtime
-      icon: mdi:bed
-      when: [night]
-```
+**Home view.** One section per floor: a `moments-floor-heading`, then a `moments-area` card for each area. On an iPad the floors sit side by side; on an iPhone they stack.
 
-Replace the entities with your own scenes and scripts. [examples/dashboard.yaml](examples/dashboard.yaml) shows every option with comments. The dashboard is generated each time it loads, so new devices and areas appear after a refresh with no editing.
+**Area views.** Every area uses the same sections in the same order, so you always know where to look. Leave out a section the area has nothing for:
 
-### Strategy options
+| Section | Cards |
+| --- | --- |
+| Header (full width) | `moments-area-header`: presence, readings, alerts, all-lights switch |
+| Lighting | `moments-tile` per light, `moments-intents` for the area's scenes |
+| Climate & air | `moments-tile` for the thermostat, `moments-metric` for temperature, humidity, CO₂ and light |
+| Windows & doors | `moments-tile` for blinds (with `progress: position`), doors and locks |
+| Devices | `moments-tile` for appliances, plugs, fans and media |
 
-| Option | Default | Description |
-| --- | --- | --- |
-| `intents` | first 8 scenes | Buttons for **Do something**. Each has `entity` (scene, script, automation or button) and optional `name`, `label`, `icon`, `when`, `area`/`areas`, `active_entity`. |
-| `intents[].when` | none | Contexts that move the intent to the front: `morning`, `day`, `evening`, `night`, and with a light sensor `dark`, `bright`. |
-| `intents[].area` / `areas` | house-level | Makes it a room intent. Scripts run from a room receive `area_id`, so one script can serve several rooms. |
-| `time_of_day_entity` | local clock | Entity whose state is `morning`, `day`, `evening` or `night`. |
-| `illuminance_entity` | none | Outdoor light sensor (lux). Enables the `dark` and `bright` contexts. |
-| `dark_below` | `50` | Lux below which it counts as dark. |
-| `weather_entity` | first weather entity | Weather shown in the header. |
-| `temperature_entity` | none | Indoor temperature shown in the header. |
-| `media_players` | all | Media players shown on Now while playing. |
-| `rooms_by_user` | none | HA user id to area id. That user's Now leads with **This room**. Use for docked tablets. |
-| `room_groups` | HA floors | Named, ordered groups of areas for the Rooms tab. `show_on_now: true` labels that group's "on" entities in On now. |
-| `hide_areas` | none | Areas left off the Rooms tab. |
-| `areas.<area_id>` | | Per-area `compact`, `domains` and `exclude`. Small areas are compact by default. |
-| `schedules` | none | Scheduled automations you can adjust (time, days, sunset offset, on/off). Shown on a Schedules page behind the clock icon, never on Now. |
-| `room_schedules` | `true` | Show a one-line schedule summary at the bottom of each room. |
-| `chips` | | `battery_threshold`, `exclude`, `finished` (appliances), `schedules_off_after_hours` (opt-in). |
-| `on_now` | | `domains`, `exclude`. |
-
-### Optional: time-of-day helper
-
-Without a helper, the clock decides (morning 05:00, day 11:00, evening 17:00, night 22:00). To control it yourself, go to **Settings → Devices & services → Helpers → Create helper → Dropdown**, name it `time_of_day`, add the options `morning`, `day`, `evening` and `night`, and set it from an automation. [examples/time-of-day.yaml](examples/time-of-day.yaml) has a ready-made helper and automation.
+An area card opens the view whose path is its area id, so give each area view `path: <area id>`. [examples/tabs.yaml](examples/tabs.yaml) has more views (Now, Weather & climate, Status) built from the other cards.
 
 ## 3. Set it up on your iPhone and iPad
 
@@ -92,9 +55,7 @@ In the companion app on each device:
 2. Tap your user name at the bottom of the sidebar to open your profile, and under **Dashboard** choose the new dashboard. This makes it the default on that device only.
 3. If a card shows "Custom element doesn't exist", go to the app's **Settings → Companion App → Debugging → Reset frontend cache**, then reopen the app.
 
-## Build your own dashboard from the cards
-
-The strategy above lays out the dashboard for you. To decide yourself which tabs exist and what goes on each, build a normal dashboard from the Moments cards instead, mixed with any stock cards. [examples/tabs.yaml](examples/tabs.yaml) is a ready-made start with **Now**, **Weather & climate** and **Status** tabs: create a new dashboard, open the **Raw configuration editor**, paste it, and replace the made-up ids. From then on you can edit it in the visual editor too.
+## The cards
 
 | Card | Shows | Needs |
 | --- | --- | --- |
@@ -109,7 +70,7 @@ The strategy above lays out the dashboard for you. To decide yourself which tabs
 | `moments-on-now` | Everything on or open, with one-tap off | Nothing |
 | `moments-schedules` | Scheduled automations you can adjust | See [examples/schedules.yaml](examples/schedules.yaml) |
 | `moments-weather` | Today in detail, then 7 days: condition icon, rain (mm), wind and gusts, low–high bar | A weather entity with a daily forecast |
-| `moments-temperatures` | Rooms and outside: now, today's range, trend, 24-hour chart | Temperature sensors |
+| `moments-temperatures` | Indoor and outside: now, today's range, trend, 24-hour chart | Temperature sensors |
 | `moments-daylight` | Today's outdoor light (log scale) against your dark line, and when it got dark | An outdoor lux sensor |
 | `moments-internet` | Online status, speeds, a 7-day chart and recent outages | Ping integration (online) and Speedtest integration (speeds) |
 | `moments-appliance` | Program, progress and finish time, then recent runs (with kWh from a plug) | E.g. the Home Connect integration |
@@ -120,6 +81,19 @@ Every option is in [examples/cards.yaml](examples/cards.yaml). The charts and lo
 recorder:
   purge_keep_days: 90
 ```
+
+### Intents, schedules and time of day
+
+`moments-intents` shows scenes and scripts as large buttons, ordered by context. Each intent has `entity` (scene, script, automation or button) and optional `name`, `label`, `icon`, `when`, `area`/`areas` and `active_entity`.
+
+| Option | Description |
+| --- | --- |
+| `when` | Contexts that move the intent to the front: `morning`, `day`, `evening`, `night`, and with a light sensor `dark`, `bright`. |
+| `area` / `areas` on an intent | Makes it an area intent. Scripts run from an area receive `area_id`, so one script can serve several areas ([examples/scripts.yaml](examples/scripts.yaml)). |
+| `area` on the card | Shows only that area's intents (`include_house: true` adds the house-level ones). |
+| `areas_by_user` | HA user id to area id, on `moments-intents` and `moments-header`. That user sees their area first. Use for docked tablets. |
+
+Without a helper, the clock decides the time of day (morning 05:00, day 11:00, evening 17:00, night 22:00). To control it yourself, create a **Dropdown** helper named `time_of_day` with the options `morning`, `day`, `evening` and `night`, set it from an automation, and pass `time_of_day_entity` to the cards. [examples/time-of-day.yaml](examples/time-of-day.yaml) has a ready-made helper and automation, and [examples/schedules.yaml](examples/schedules.yaml) the helpers behind `moments-schedules`.
 
 ### The Moments theme
 
@@ -171,6 +145,6 @@ Each release also includes eight backdrops (`mist`, `aurora`, `horizon` and `con
 
 ## Uninstall
 
-Remove the dashboard under **Settings → Dashboards**, then remove Moments in HACS (or delete `/config/www/ha-moments.js` and its resource for a manual install).
+Remove the Moments cards from your dashboards, then remove Moments where you installed it (or delete `/config/www/ha-moments.js` and its resource for a manual install).
 
 To deploy a test build and check it on your devices, see [TESTING.md](TESTING.md). Development notes are in [CONTRIBUTING.md](CONTRIBUTING.md).

@@ -27,7 +27,7 @@ describe("intentsFor", () => {
   it("treats an empty areas list as house-level", () => {
     expect(ids(intentsFor([{ entity: "scene.a", areas: [] }], {}))).toEqual(["scene.a"]);
   });
-  it("leads with the user's room, then house intents", () => {
+  it("leads with the user's area, then house intents", () => {
     expect(ids(intentsFor(all, { userArea: "lounge" }))).toEqual([
       "scene.lounge_movie",
       "script.lights_off",
@@ -46,13 +46,13 @@ describe("intentsFor", () => {
       "script.bedtime",
     ]);
   });
-  it("prefers the card's area over the user's room", () => {
+  it("prefers the card's area over the user's area", () => {
     expect(ids(intentsFor(all, { area: "kitchen", userArea: "lounge" }))).toEqual([
       "script.lights_off",
       "scene.kitchen_cook",
     ]);
   });
-  it("drops empty groups and keeps the room context per group", () => {
+  it("drops empty groups and keeps the area context per group", () => {
     const groups = intentGroups(all, { userArea: "garage" });
     expect(groups).toHaveLength(1);
     expect(groups[0].area).toBeUndefined();
@@ -99,7 +99,7 @@ describe("serviceFor", () => {
     expect(serviceFor({ entity: "button.x" }).service).toBe("press");
     expect(serviceFor({ entity: "script.x" }).service).toBe("turn_on");
   });
-  it("passes area_id to scripts in a room context only", () => {
+  it("passes area_id to scripts in an area context only", () => {
     expect(serviceFor({ entity: "script.off" }, "lounge").data).toEqual({
       entity_id: "script.off",
       variables: { area_id: "lounge" },
@@ -183,9 +183,9 @@ describe("moments-intents card", () => {
     expect(() => make().setConfig(stub)).not.toThrow();
   });
 
-  it("runs a tapped intent with the room's area_id", async () => {
+  it("runs a tapped intent with the area's area_id", async () => {
     const card = make();
-    card.setConfig({ type: "x", intents: [{ entity: "script.off", areas: ["lounge"] }], rooms_by_user: { u1: "lounge" } });
+    card.setConfig({ type: "x", intents: [{ entity: "script.off", areas: ["lounge"] }], areas_by_user: { u1: "lounge" } });
     const hass = fakeHass({ "script.off": "off" }, { user: { id: "u1", name: "Ann" } });
     card.hass = hass;
     document.body.append(card);
