@@ -9,6 +9,7 @@ import "./cards/moments-temperatures";
 import "./cards/moments-daylight";
 import "./cards/moments-internet";
 import "./cards/moments-appliance";
+import "./cards/moments-tile";
 
 declare const __VERSION__: string;
 
@@ -29,6 +30,7 @@ window.customCards.push(
   { type: "moments-temperatures", name: "Moments temperatures", description: "Room and outdoor temperatures with today's range and a chart." },
   { type: "moments-daylight", name: "Moments daylight", description: "Today's outdoor light against your dark line." },
   { type: "moments-internet", name: "Moments internet", description: "Connection status, speeds and recent outages." },
+  { type: "moments-tile", name: "Moments tile", description: "One device with a state-aware Moments icon, its state and optional progress." },
   { type: "moments-appliance", name: "Moments appliance", description: "Program progress, finish time and recent runs." },
 );
 

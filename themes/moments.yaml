@@ -7,6 +7,14 @@
 # rest of Home Assistant keeps your usual theme.
 moments:
   ha-card-border-radius: "22px"
+  # Defaults for moments-tile; any card can override them.
+  moments-icon-style: glow          # glow | crisp
+  moments-tile-surface: solid       # solid | frosted | glass
+  # Backdrops: copy the backdrops folder from the release to /config/www/moments/backdrops/,
+  # then swap a mode's lovelace-background for, e.g.:
+  #   lovelace-background: center / cover no-repeat url("/local/moments/backdrops/aurora-dark.svg")
+  # Options: mist, aurora, horizon, contour (each -light and -dark). With a backdrop, try
+  # moments-tile-surface: glass and moments-tile-opacity "0.4" (light) / "0.55" (dark).
   ha-card-box-shadow: "none"
   ha-card-border-width: "1px"
   modes:

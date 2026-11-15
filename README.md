@@ -98,6 +98,7 @@ The strategy above lays out the dashboard for you. To decide yourself which tabs
 
 | Card | Shows | Needs |
 | --- | --- | --- |
+| `moments-tile` | One device: a state-aware Moments icon, name and state, plus optional programme, metrics, progress bar and finish time | Any entity |
 | `moments-header` | Greeting, time, weather, indoor temperature | A weather entity (optional) |
 | `moments-chips` | Alerts only when something needs you | Nothing |
 | `moments-intents` | Your scenes and scripts as large buttons, ordered by time of day | Scenes or scripts |
@@ -123,6 +124,27 @@ The cards look right in any theme. To give the whole dashboard, stock cards incl
 1. Copy [themes/moments.yaml](themes/moments.yaml) to `/config/themes/moments.yaml`.
 2. Make sure `configuration.yaml` has `frontend:` → `themes: !include_dir_merge_named themes`, then restart once (later changes only need **Developer tools → Actions → `frontend.reload_themes`**).
 3. Set `theme: moments` on each view, as [examples/tabs.yaml](examples/tabs.yaml) does, or pick **Moments** as your theme in your profile.
+
+### Tiles: icons, surfaces and backdrops
+
+`moments-tile` draws one of 16 animated icon sets (light, lock, door, blind, thermostat, plug, fan, coffee, washer, dishwasher, dryer, fridge, freezer, light sensor, motion, temperature), picked from the entity or set with `icon_set`. Each icon shows the entity's state, and it only moves while the device is active. Motion stops when Reduce Motion is on. Blinds have an icon for every 10% step: a position rounds up to the next step, and the shade glides between steps.
+
+Everything beyond `entity` is optional, and anything a device can't report is simply left out:
+
+| Option | What it does |
+| --- | --- |
+| `icon_set` | Which icon to draw. Default: from the entity's domain and device class. |
+| `icon_style` | `glow` (default) or `crisp`. Theme default: `moments-icon-style`. |
+| `states` | Maps the device's own state words onto the icon's states, e.g. `running: [Run, DelayedStart]`. |
+| `secondary` | An entity (e.g. the programme) or plain text after the state. |
+| `metrics` | Entities whose values join the state line, e.g. power and energy. |
+| `progress` | A 0–100 entity, or `position` for a cover. Draws a bar only when set. |
+| `finish` | A timestamp entity shown beside the bar. |
+| `surface` | `solid`, `frosted` or `glass`. Theme default: `moments-tile-surface`. |
+| `opacity`, `blur` | How much card colour shows (0–1) and the blur in px. Theme defaults: `moments-tile-opacity`, `moments-tile-blur`. |
+| `tap_action` | `more-info` (default), `toggle` or `none`. |
+
+Each release also includes eight backdrops (`mist`, `aurora`, `horizon` and `contour`, each in `-light` and `-dark`). Copy them to `/config/www/moments/backdrops/` and set `lovelace-background` in a theme mode, as the comments in [themes/moments.yaml](themes/moments.yaml) show. Glass tiles look best on a backdrop.
 
 ## Uninstall
 
