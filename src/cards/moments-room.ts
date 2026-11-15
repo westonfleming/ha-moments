@@ -86,7 +86,7 @@ export class MomentsRoom extends LitElement {
     const dark = this.hass.themes?.darkMode ? " dark" : "";
     const strength = style === "full" ? 1 : c.image_strength ?? 0.3;
     const lights = m.lights.length
-      ? html`<span class="chip">${unsafeSVG(GLYPH.bulb)}${m.lightsOn ? `${m.lightsOn} of ${m.lights.length} on` : "Lights off"}</span>`
+      ? html`<span class="chip ${m.lightsOn ? "lit" : ""}">${unsafeSVG(GLYPH.bulb)}${m.lightsOn ? `${m.lightsOn} of ${m.lights.length} on` : "Lights off"}</span>`
       : nothing;
     const alert = m.alerts.length
       ? html`<span class="chip alert">${m.alerts[0].text}${m.alerts.length > 1 ? ` +${m.alerts.length - 1}` : ""}</span>`
@@ -162,7 +162,7 @@ export class MomentsRoom extends LitElement {
         content: "";
         position: absolute;
         inset: 0;
-        background: linear-gradient(to top, rgb(0 0 0 / 0.62), rgb(0 0 0 / 0.05) 60%, rgb(0 0 0 / 0.2));
+        background: linear-gradient(to top, rgb(0 0 0 / 0.75), rgb(0 0 0 / 0.4) 55%, rgb(0 0 0 / 0.25));
       }
       .empty .img {
         filter: grayscale(1) blur(1.2px);
@@ -237,7 +237,16 @@ export class MomentsRoom extends LitElement {
         font-weight: 600;
         padding: 3px 9px 3px 6px;
         border-radius: 999px;
-        background: color-mix(in srgb, var(--moments-sun, #f5a524) 15%, transparent);
+        color: var(--moments-muted);
+        background: color-mix(in srgb, var(--moments-muted) 14%, transparent);
+      }
+      .chip.lit {
+        color: inherit;
+        background: color-mix(in srgb, var(--moments-sun) 18%, transparent);
+      }
+      .chip:not(.lit) svg {
+        filter: grayscale(1);
+        opacity: 0.7;
       }
       .chip svg {
         width: 14px;
@@ -251,6 +260,7 @@ export class MomentsRoom extends LitElement {
       /* Full photo: light text over the scrim, content at the bottom. */
       .full .in {
         color: #fff;
+        text-shadow: 0 1px 8px rgb(0 0 0 / 0.45);
         align-content: end;
       }
       .full .top {
@@ -261,6 +271,7 @@ export class MomentsRoom extends LitElement {
         color: rgb(255 255 255 / 0.85);
       }
       .full .chip:not(.alert) {
+        color: #fff;
         background: rgb(255 255 255 / 0.18);
         -webkit-backdrop-filter: blur(8px);
         backdrop-filter: blur(8px);

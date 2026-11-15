@@ -61,9 +61,16 @@ export const headerModel = (hass: HomeAssistant, c: AreaHeaderConfig, now = Date
     else {
       const level = levelFor(v, DEFAULT_LEVELS[kind]);
       text = level ? `Air ${level.label.toLowerCase()}` : `${e.state} ${e.attributes.unit_of_measurement ?? ""}`.trim();
-      if (level?.color === "poor") alerts.push({ entity: id, text: `${kind === "co2" ? "CO₂" : "Air"} high` });
     }
     stats.push({ stat, kind, text, entity: id });
+  }
+  // Poor air raises an alert even when the air reading itself isn't shown.
+  const airId = pick(c.air, found.air);
+  const air = airId ? hass.states[airId] : undefined;
+  if (airId && air && !BAD.has(air.state)) {
+    const kind = kindOf(air);
+    if (levelFor(parseFloat(air.state), DEFAULT_LEVELS[kind])?.color === "poor")
+      alerts.push({ entity: airId, text: `${kind === "co2" ? "CO₂" : "Air"} high` });
   }
   const lights = c.lights === false ? [] : c.lights ?? found.lights;
   const alertIds = c.alerts === false ? [] : c.alerts ?? found.alerts;

@@ -111,3 +111,19 @@ describe("moments-room", () => {
     el.remove();
   });
 });
+
+describe("room alerts", () => {
+  it("raises high CO₂ even though the room shows only temperature", async () => {
+    const hass = fakeHass(
+      { "sensor.co2": ["1400", { device_class: "carbon_dioxide" }] },
+      { areas: { bed: { area_id: "bed", name: "Bedroom" } }, entities: { "sensor.co2": { entity_id: "sensor.co2", area_id: "bed" } } },
+    );
+    const el = document.createElement("moments-room") as MomentsRoom;
+    el.setConfig({ type: "x", area: "bed" } as any);
+    el.hass = hass;
+    document.body.appendChild(el);
+    await el.updateComplete;
+    expect(el.shadowRoot!.querySelector(".chip.alert")!.textContent).toBe("CO₂ high");
+    el.remove();
+  });
+});
