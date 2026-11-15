@@ -167,3 +167,36 @@ type: custom:moments-tile
 entity: cover.office_blind
 progress: position
 icon_style: crisp     # glow (default) | crisp
+
+---
+# One reading with its status word and a 24-hour sparkline.
+type: custom:moments-metric
+entity: sensor.living_room_co2
+
+---
+# Your own words for the ranges; color is good | fair | poor | info or any CSS colour.
+type: custom:moments-metric
+entity: sensor.office_humidity
+name: Humidity
+sparkline: 12
+decimals: 0
+levels:
+  - { below: 35, label: Dry, color: fair }
+  - { below: 55, label: Just right, color: good }
+  - { label: Damp, color: poor }
+surface: frosted
+
+---
+# The top of an area view. Everything is found in the area; override or hide (false) any part.
+type: custom:moments-area-header
+area: living_room
+
+---
+type: custom:moments-area-header
+area: office
+name: Study
+presence: binary_sensor.office_occupancy
+illuminance: false
+lights: [light.office_desk, light.office_ceiling]
+show: [temperature, air]
+surface: glass
