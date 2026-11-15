@@ -2,8 +2,6 @@ import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import { parse, parseAllDocuments } from "yaml";
 import "../src/ha-moments";
-import { generateDashboard } from "../src/strategy/moments-dashboard-strategy";
-import { fakeHass } from "./fake-hass";
 
 const load = (f: string) => readFileSync(`examples/${f}`, "utf8");
 
@@ -30,17 +28,9 @@ describe("examples", () => {
     for (const card of cards) expect(() => setConfig(card), card.type).not.toThrow();
   });
 
-  it("dashboard.yaml generates cards with valid configs", async () => {
-    const { strategy } = parse(load("dashboard.yaml"));
-    const hass = fakeHass(
-      { "light.a": "on", "scene.living_room_relax": "2026-01-01T00:00:00Z", "weather.home": ["sunny", { temperature: 14 }] },
-      {
-        areas: { living_room: { area_id: "living_room", name: "Living room" }, bedroom_1: { area_id: "bedroom_1", name: "Bedroom 1" } },
-        entities: { "light.a": { entity_id: "light.a", area_id: "bedroom_1" } },
-      },
-    );
-    const cards = customCards(await generateDashboard(strategy, hass));
-    expect(cards.length).toBeGreaterThan(4);
+  it("every custom card in home.yaml is a valid config", () => {
+    const cards = customCards(parse(load("home.yaml")));
+    expect(cards.map((c) => c.type)).toEqual(expect.arrayContaining(["custom:moments-area", "custom:moments-floor-heading", "custom:moments-area-header", "custom:moments-metric", "custom:moments-tile"]));
     for (const card of cards) expect(() => setConfig(card), card.type).not.toThrow();
   });
 });

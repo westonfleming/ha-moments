@@ -12,7 +12,7 @@ export const SCENE_ACTIVE_MS = 4 * 60 * 60 * 1000;
 export interface IntentScope {
   /** The card's own area. */
   area?: string;
-  /** The current user's room from rooms_by_user. */
+  /** The current user's area from areas_by_user. */
   userArea?: string;
   /** With `area`, also show house-level intents. */
   includeHouse?: boolean;
@@ -29,18 +29,18 @@ export const isHouseIntent = (intent: Intent) => !intent.area && !intent.areas?.
 export const matchesArea = (intent: Intent, area: string) =>
   intent.area === area || !!intent.areas?.includes(area);
 
-/** The shown intents, grouped by scope: a room group (if any) first, then house intents. */
+/** The shown intents, grouped by scope: an area group (if any) first, then house intents. */
 export const intentGroups = (intents: Intent[], scope: IntentScope): IntentGroup[] => {
   const house: IntentGroup = { intents: intents.filter(isHouseIntent) };
-  const room = (area: string): IntentGroup => ({ area, intents: intents.filter((i) => matchesArea(i, area)) });
+  const inArea = (area: string): IntentGroup => ({ area, intents: intents.filter((i) => matchesArea(i, area)) });
   let groups: IntentGroup[];
-  if (scope.area) groups = scope.includeHouse ? [room(scope.area), house] : [room(scope.area)];
-  else if (scope.userArea) groups = [room(scope.userArea), house];
+  if (scope.area) groups = scope.includeHouse ? [inArea(scope.area), house] : [inArea(scope.area)];
+  else if (scope.userArea) groups = [inArea(scope.userArea), house];
   else groups = [house];
   return groups.filter((g) => g.intents.length);
 };
 
-/** The shown intents as one list, room intents before house intents. */
+/** The shown intents as one list, area intents before house intents. */
 export const intentsFor = (intents: Intent[], scope: IntentScope): Intent[] =>
   intentGroups(intents, scope).flatMap((g) => g.intents);
 
@@ -56,7 +56,7 @@ export interface ServiceCall {
   data: Record<string, any>;
 }
 
-/** The service that runs an intent. Scripts get `variables.area_id` in a room context. */
+/** The service that runs an intent. Scripts get `variables.area_id` in an area context. */
 export const serviceFor = (intent: Intent, areaId?: string): ServiceCall => {
   const domain = domainOf(intent.entity);
   const data: Record<string, any> = { entity_id: intent.entity };

@@ -21,12 +21,12 @@ exclude:
 
 ---
 # Scene and script buttons, ordered by time of day and daylight.
-# Takes the same `intents` list as the dashboard (see dashboard.yaml).
+# Each intent: entity, plus optional name, label, icon, when, area/areas, active_entity.
 type: custom:moments-intents
 time_of_day_entity: input_select.time_of_day
 illuminance_entity: sensor.outdoor_motion_illuminance
 dark_below: 50
-area: living_room        # optional: only this room's intents
+area: living_room        # optional: only this area's intents
 include_house: true      # with area: also show house-level intents
 intents:
   - entity: scene.movie
@@ -43,12 +43,12 @@ time_of_day_entity: input_select.time_of_day
 illuminance_entity: sensor.outdoor_motion_illuminance   # adds "dark outside"
 weather_entity: weather.home
 temperature_entity: sensor.hallway_temperature
-area: kitchen                   # optional room label
+area: kitchen                   # optional area label
 schedules_path: schedules       # optional: clock icon opening this view
 
 ---
-# Scheduled automations you can adjust. Same schedule options as the
-# dashboard (see dashboard.yaml and schedules.yaml).
+# Scheduled automations you can adjust. schedules.yaml has the helpers and
+# automations behind these.
 type: custom:moments-schedules
 all: true                       # or `area: bedroom_1`; without either, house-level only
 schedules:
@@ -82,13 +82,13 @@ days: 7              # 0 to 7 days after today
 gust_warn: 50        # gusts at or above this are highlighted (entity's wind unit)
 
 ---
-# Room and outdoor temperatures: now, today's range and trend, and a chart.
+# Indoor and outdoor temperatures: now, today's range and trend, and a chart.
 type: custom:moments-temperatures
 title: Temperatures
 outside: sensor.outdoor_motion_temperature
 hours: 24            # chart length; 0 hides the chart
 layout: grid         # or row: all tiles side by side, swipe if they do not fit
-rooms:
+indoor:
   - entity: sensor.living_room_temperature
     name: Living room
   - sensor.bedroom_temperature

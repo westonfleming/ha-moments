@@ -66,14 +66,14 @@ describe("subtitleParts", () => {
     { "sensor.lux": "10", "weather.home": ["sunny", { temperature: 20 }] },
     { user: { id: "u1", name: "A" }, areas: { kitchen: { area_id: "kitchen", name: "Kitchen" } } },
   );
-  it("adds the room from area or the current user, and dark outside", () => {
+  it("adds the area from area or the current user, and dark outside", () => {
     expect(subtitleParts(hass, { type: "x", area: "kitchen", illuminance_entity: "sensor.lux" })).toEqual([
       "Kitchen",
       "20° out, sunny",
       "dark outside",
     ]);
-    expect(subtitleParts(hass, { type: "x", rooms_by_user: { u1: "kitchen" } })).toEqual(["Kitchen", "20° out, sunny"]);
-    expect(subtitleParts(hass, { type: "x", rooms_by_user: { u2: "kitchen" }, illuminance_entity: "sensor.lux", dark_below: 5 })).toEqual([
+    expect(subtitleParts(hass, { type: "x", areas_by_user: { u1: "kitchen" } })).toEqual(["Kitchen", "20° out, sunny"]);
+    expect(subtitleParts(hass, { type: "x", areas_by_user: { u2: "kitchen" }, illuminance_entity: "sensor.lux", dark_below: 5 })).toEqual([
       "20° out, sunny",
     ]);
   });

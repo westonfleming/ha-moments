@@ -66,7 +66,7 @@ views:
           - type: custom:moments-temperatures
             outside: sensor.outdoor_motion_temperature
             hours: 24
-            rooms:
+            indoor:
               - entity: sensor.living_room_temperature
                 name: Living room
               - entity: sensor.office_temperature

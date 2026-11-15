@@ -28,9 +28,9 @@ Pick one.
 2. Open `www`, click the upload icon, and upload `ha-moments.js`.
 3. **First time only:** restart Home Assistant (**Settings → ⋮ → Restart Home Assistant**) so it starts serving `www` as `/local/`. Then go to **Settings → Dashboards → ⋮ → Resources → Add resource**, enter `/local/ha-moments.js?v=1`, choose **JavaScript module**, and save.
 4. **Every later build:** upload over the old file, then edit the resource and bump the number (`?v=2`, `?v=3`, …). This is what makes the apps fetch the new file.
-5. If you haven't yet, create the dashboard as in the README (**2. Create the dashboard**), using your intents from #5.
+5. If you haven't yet, compose a dashboard as in the README (**2. Compose a dashboard**), starting from `examples/home.yaml`.
 
-**Check the right build loaded:** open Home Assistant in a desktop browser, open the developer console, and look for the orange `MOMENTS 0.1.0` banner.
+**Check the right build loaded:** open Home Assistant in a desktop browser, open the developer console, and look for the orange `MOMENTS 0.3.0` banner.
 
 ## 3. Load it on each device
 
@@ -65,11 +65,11 @@ Do every check on **iPhone**, **iPad portrait** and **iPad landscape**, in both 
 | 6 | On now | Lists exactly what's on; the toggle turns each off; **All lights off** turns off only lights |
 | 7 | Quiet house | With everything off, On now says "All quiet" and no chip row shows |
 | 8 | Media | The media tile appears only while playing |
-| 9 | Rooms tab | Every area with devices is there, and nothing hidden or diagnostic shows |
+| 9 | Home and area views | Each floor lists its areas with the right photo, presence and temperature; tapping an area opens its view, whose sections follow the standard order |
 | 10 | Layout | iPhone shows one column; iPad shows two; nothing sits under the status bar or Dynamic Island |
 | 11 | Touch | Every button is easy to hit with a thumb; no accidental taps while scrolling |
 | 12 | Dark mode | All text is readable, including on highlighted (amber) buttons |
-| 13 | iPad room | Signed in as the iPad user, "This room" shows; on your own phone it doesn't (once #8 is done) |
+| 13 | iPad area | With `areas_by_user`, signed in as the iPad user, the header and intents lead with that area; on your own phone they don't |
 | 14 | Update | After a new build, bump `?v=`, reset the frontend cache, and the console banner or a visible change confirms the new build |
 
 ## 6. Report results

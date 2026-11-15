@@ -1,4 +1,3 @@
-import "./strategy/moments-dashboard-strategy";
 import "./cards/moments-header";
 import "./cards/moments-chips";
 import "./cards/moments-intents";
@@ -31,7 +30,7 @@ window.customCards.push(
   { type: "moments-on-now", name: "Moments on now", description: "Everything that is on or open right now." },
   { type: "moments-schedules", name: "Moments schedules", description: "Quiet list of schedules; edit their time and days in place." },
   { type: "moments-weather", name: "Moments weather", description: "Today in detail and the next 7 days: rain, wind and gusts." },
-  { type: "moments-temperatures", name: "Moments temperatures", description: "Room and outdoor temperatures with today's range and a chart." },
+  { type: "moments-temperatures", name: "Moments temperatures", description: "Indoor and outdoor temperatures with today's range and a chart." },
   { type: "moments-daylight", name: "Moments daylight", description: "Today's outdoor light against your dark line." },
   { type: "moments-internet", name: "Moments internet", description: "Connection status, speeds and recent outages." },
   { type: "moments-tile", name: "Moments tile", description: "One device with a state-aware Moments icon, its state and optional progress." },
