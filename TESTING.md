@@ -10,19 +10,37 @@ How to put a test build of Moments on your Home Assistant and check it on the de
 
 ## 1. Get a build
 
-Pick one.
+### Test a pull request (no release needed)
 
-**From GitHub (no tools needed).** Every push and pull request builds `ha-moments.js`.
-1. Open the repo's **Actions** tab and click the latest green **Build** run for the branch you want to test (`main`, or a PR's branch).
-2. Under **Artifacts**, download **ha-moments**. It's a zip; unzip it to get `ha-moments.js`.
+Every push to a pull request publishes a **pre-release** with `ha-moments.js` attached, tagged with the next patch version plus the PR and build number, for example `v0.3.1-pr32.7`. Each push replaces the PR's previous pre-release, and all of them are deleted when the PR is merged or closed. The PR's **Checks → PR pre-release** run summary links the one it made.
 
-**From HACS (simplest).** Moments is installed through HACS, so a new release shows as an update there. Download it, then reload. Skip step 2 below; HACS handles the file and the resource.
+On Home Assistant, using your normal Moments install:
 
-**From a pre-release.** Publish a GitHub release with **Set as a pre-release** ticked and a tag such as `v0.1.0-beta.1`. The release workflow attaches `ha-moments.js` to it within a couple of minutes. HACS ignores pre-releases unless beta versions are enabled for Moments, so either enable them in HACS or install the file by hand (step 2).
+1. **First time only:** open Moments where you installed it from, ⋮ → **Redownload**, and turn on **Show beta versions**. Leave it on while you're testing.
+2. ⋮ → **Update information**, so it sees the newest pre-release straight away instead of at its next scheduled check.
+3. ⋮ → **Redownload**, pick the `-pr` version you want (newest is at the top), **Download**, and reload when asked.
+4. Check the console banner says the same version, e.g. `MOMENTS 0.3.1-pr32.7`, then reset the frontend cache on each device (step 3 below).
+
+For a newer push to the same PR, repeat steps 2–4.
+
+**Going back to the stable build:** ⋮ → **Redownload**, pick the latest version without `-pr`, and turn **Show beta versions** off. Do this once the PR is merged too, because its pre-release is deleted and the stable release that includes it may come later.
+
+Your dashboards don't change. Only the code behind the `custom:moments-*` cards does, and a redownload of the stable version puts it back.
+
+### Other ways
+
+**From GitHub Actions.** Every push and pull request also builds `ha-moments.js` as a downloadable artifact.
+1. Open the repo's **Actions** tab and click the latest green **Build** run for the branch you want to test.
+2. Under **Artifacts**, download **ha-moments**. It's a zip; unzip it to get `ha-moments.js`, and deploy it by hand (step 2).
+
+**From a release.** A full release shows as an update in the marketplace. Download it, then reload. Skip step 2 below; the marketplace handles the file and the resource.
 
 **From source.** `npm install && npm run build` gives `dist/ha-moments.js`.
 
-## 2. Deploy it to Home Assistant
+## 2. Deploy it to Home Assistant (manual builds only)
+
+Skip this if you installed through the marketplace, including PR pre-releases.
+
 
 1. Open **File editor** from the sidebar. Click the folder icon, go to `/homeassistant/` (shown as `/config` in older versions), and create a `www` folder if it isn't there.
 2. Open `www`, click the upload icon, and upload `ha-moments.js`.

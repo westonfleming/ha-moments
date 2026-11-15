@@ -1,7 +1,8 @@
 import * as esbuild from "esbuild";
 import { readFileSync } from "node:fs";
 
-const { version } = JSON.parse(readFileSync("package.json", "utf8"));
+// CI sets MOMENTS_VERSION for PR test builds (e.g. 0.3.1-pr32.7) so the console banner names the build.
+const version = process.env.MOMENTS_VERSION || JSON.parse(readFileSync("package.json", "utf8")).version;
 
 const options = {
   entryPoints: ["src/ha-moments.ts"],

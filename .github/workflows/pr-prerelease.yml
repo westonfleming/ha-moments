@@ -1,0 +1,63 @@
+name: PR pre-release
+
+# Publishes every push to a pull request as a GitHub pre-release with
+# ha-moments.js attached, so it can be installed from Home Assistant with beta
+# versions enabled. The tag is the next patch version plus the PR and run, e.g.
+# v0.3.1-pr32.7, so it sorts above the installed release. Older pre-releases for
+# the same PR are removed on each push, and all of them when the PR closes.
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pr-prerelease-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+env:
+  GH_TOKEN: ${{ github.token }}
+  PR: ${{ github.event.pull_request.number }}
+
+jobs:
+  publish:
+    # Forks get a read-only token, so only branches in this repo are published.
+    if: github.event.action != 'closed' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Work out the version
+        run: |
+          base=$(node -p "require('./package.json').version")
+          next=$(node -p "const [a,b,c]='$base'.split('.').map(Number); [a,b,c+1].join('.')")
+          echo "MOMENTS_VERSION=$next-pr$PR.$GITHUB_RUN_NUMBER" >> "$GITHUB_ENV"
+      - run: npm run build
+      - name: Replace this PR's pre-release
+        run: |
+          tag="v$MOMENTS_VERSION"
+          gh release list --limit 200 --json tagName,isPrerelease \
+            --jq ".[] | select(.isPrerelease and (.tagName | test(\"-pr$PR\\\\.\"))) | .tagName" |
+            while read -r old; do gh release delete "$old" --cleanup-tag --yes; done
+          gh release create "$tag" dist/ha-moments.js \
+            --prerelease \
+            --target "${{ github.event.pull_request.head.sha }}" \
+            --title "$tag (PR #$PR test build)" \
+            --notes "Test build of #$PR (${{ github.event.pull_request.head.ref }} @ ${GITHUB_SHA::7}). Not for general use; it is deleted when the PR closes. See TESTING.md."
+          echo "Published [$tag](${{ github.server_url }}/${{ github.repository }}/releases/tag/$tag)" >> "$GITHUB_STEP_SUMMARY"
+
+  cleanup:
+    if: github.event.action == 'closed' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete this PR's pre-releases
+        run: |
+          gh release list --repo "$GITHUB_REPOSITORY" --limit 200 --json tagName,isPrerelease \
+            --jq ".[] | select(.isPrerelease and (.tagName | test(\"-pr$PR\\\\.\"))) | .tagName" |
+            while read -r old; do gh release delete "$old" --repo "$GITHUB_REPOSITORY" --cleanup-tag --yes; done
