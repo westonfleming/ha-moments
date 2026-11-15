@@ -99,6 +99,8 @@ The strategy above lays out the dashboard for you. To decide yourself which tabs
 | Card | Shows | Needs |
 | --- | --- | --- |
 | `moments-tile` | One device: a state-aware Moments icon, name and state, plus optional programme, metrics, progress bar and finish time | Any entity |
+| `moments-metric` | One reading, value first: number, status word (e.g. CO₂ Good, Humidity Comfortable, temperature trend) and a sparkline | A sensor |
+| `moments-area-header` | Top of an area view: name, presence, temperature, humidity, air and light chips, red alert chips and an all-lights switch | An area |
 | `moments-header` | Greeting, time, weather, indoor temperature | A weather entity (optional) |
 | `moments-chips` | Alerts only when something needs you | Nothing |
 | `moments-intents` | Your scenes and scripts as large buttons, ordered by time of day | Scenes or scripts |
@@ -143,6 +145,12 @@ Everything beyond `entity` is optional, and anything a device can't report is si
 | `surface` | `solid`, `frosted` or `glass`. Theme default: `moments-tile-surface`. |
 | `opacity`, `blur` | How much card colour shows (0–1) and the blur in px. Theme defaults: `moments-tile-opacity`, `moments-tile-blur`. |
 | `tap_action` | `more-info` (default), `toggle` or `none`. |
+
+### Metrics and area headers
+
+`moments-metric` shows one reading. Its status word comes from `levels`, a list of `{ below, label, color }` where `color` is `good`, `fair`, `poor`, `info` or any CSS colour. Humidity, CO₂, PM2.5 and light have sensible defaults; temperature shows its trend instead. `sparkline` sets the hours of history (default 24, `false` hides it) and `decimals` the precision.
+
+`moments-area-header` needs only `area`. It finds the area's temperature, humidity, air quality, light and presence sensors, its lights and its leak, smoke, gas and problem sensors. Set any of `temperature`, `humidity`, `air`, `illuminance` or `presence` to another entity, or to `false` to hide it. `lights` and `alerts` take a list or `false`, and `show` picks which readings appear and in what order. Alerts and high CO₂ appear as red chips. Both cards take the same `surface`, `opacity` and `blur` as tiles.
 
 Each release also includes eight backdrops (`mist`, `aurora`, `horizon` and `contour`, each in `-light` and `-dark`). Copy them to `/config/www/moments/backdrops/` and set `lovelace-background` in a theme mode, as the comments in [themes/moments.yaml](themes/moments.yaml) show. Glass tiles look best on a backdrop.
 

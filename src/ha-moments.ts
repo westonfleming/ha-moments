@@ -10,6 +10,8 @@ import "./cards/moments-daylight";
 import "./cards/moments-internet";
 import "./cards/moments-appliance";
 import "./cards/moments-tile";
+import "./cards/moments-metric";
+import "./cards/moments-area-header";
 
 declare const __VERSION__: string;
 
@@ -31,6 +33,8 @@ window.customCards.push(
   { type: "moments-daylight", name: "Moments daylight", description: "Today's outdoor light against your dark line." },
   { type: "moments-internet", name: "Moments internet", description: "Connection status, speeds and recent outages." },
   { type: "moments-tile", name: "Moments tile", description: "One device with a state-aware Moments icon, its state and optional progress." },
+  { type: "moments-metric", name: "Moments metric", description: "One reading, value first, with a status word and an optional sparkline." },
+  { type: "moments-area-header", name: "Moments area header", description: "Top of an area view: presence, readings, alerts and an all-lights switch." },
   { type: "moments-appliance", name: "Moments appliance", description: "Program progress, finish time and recent runs." },
 );
 
