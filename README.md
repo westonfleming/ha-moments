@@ -1,13 +1,17 @@
 # Moments
 
-Building blocks for Home Assistant dashboards on the iPhone and iPad companion apps. Moments adds cards, animated device icons, a theme and backdrops. You compose them into your own dashboards, views and sections, mixed with any stock cards. Moments does not create a dashboard for you.
+Building blocks for Home Assistant dashboards, on phones, tablets, wall panels and desktops. Moments adds cards, animated device icons, a theme and backdrops. You compose them into your own dashboards, views and sections, mixed with any stock cards. Moments does not create a dashboard for you.
+
+![An area view in dark mode on the Mist backdrop: area header, lighting, climate, windows and devices](docs/area-view-dark.png)
+
+![The home view in dark mode: areas grouped by floor, each over a faded photo](docs/home-view-dark.png)
 
 A good place to start is a **Home** view of your areas grouped by floor, each opening an **area view** that follows the same sections in every area. [examples/home.yaml](examples/home.yaml) has both, ready to paste.
 
 ## Requirements
 
 - Home Assistant 2025.1 or newer
-- The Home Assistant companion app on iPhone or iPad (any browser works too)
+- Any device that runs the Home Assistant app or a modern browser
 
 ## 1. Install
 
@@ -33,7 +37,7 @@ To update a manual install, replace the file and bump the `?v=` number in the re
 2. Go to **Settings → Dashboards → Add dashboard → New dashboard from scratch**, name it and open it.
 3. Choose **✎ Edit → ⋮ → Raw configuration editor**, paste [examples/home.yaml](examples/home.yaml), replace the made-up ids, and save. From then on the visual editor works too.
 
-**Home view.** One section per floor: a `moments-floor-heading`, then a `moments-area` card for each area. On an iPad the floors sit side by side; on an iPhone they stack.
+**Home view.** One section per floor: a `moments-floor-heading`, then a `moments-area` card for each area. On a tablet or desktop the floors sit side by side; on a phone they stack.
 
 **Area views.** Every area uses the same sections in the same order, so you always know where to look. Leave out a section the area has nothing for:
 
@@ -47,13 +51,11 @@ To update a manual install, replace the file and bump the `?v=` number in the re
 
 An area card opens the view whose path is its area id, so give each area view `path: <area id>`. [examples/tabs.yaml](examples/tabs.yaml) has more views (Now, Weather & climate, Status) built from the other cards.
 
-## 3. Set it up on your iPhone and iPad
-
-In the companion app on each device:
+## 3. Make it the default on each device
 
 1. Open the new dashboard from the sidebar.
-2. Tap your user name at the bottom of the sidebar to open your profile, and under **Dashboard** choose the new dashboard. This makes it the default on that device only.
-3. If a card shows "Custom element doesn't exist", go to the app's **Settings → Companion App → Debugging → Reset frontend cache**, then reopen the app.
+2. Open your profile (your user name at the bottom of the sidebar) and under **Dashboard** choose the new dashboard. This makes it the default on that device only.
+3. If a card shows "Custom element doesn't exist", the device still has the old frontend cached. In a browser, do a hard refresh. In the Home Assistant app, use **Reset frontend cache** in the app's settings, then reopen the app.
 
 ## The cards
 

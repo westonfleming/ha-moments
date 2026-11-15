@@ -1,6 +1,6 @@
 # Deploy and test
 
-How to put a test build of Moments on your Home Assistant and check it on the iPhone and iPad companion apps. Plan on about 30 minutes for the first time through.
+How to put a test build of Moments on your Home Assistant and check it on the devices you use, such as a phone, a tablet and a desktop browser. Plan on about 30 minutes for the first time through.
 
 ## Before you start
 
@@ -34,9 +34,9 @@ Pick one.
 
 ## 3. Load it on each device
 
-In the companion app on the iPhone, then the iPad:
+On each device:
 
-1. **Settings → Companion App → Debugging → Reset frontend cache**, then close and reopen the app. Do this after every new build.
+1. Clear the cached frontend after every new build: a hard refresh in a browser, or **Reset frontend cache** in the Home Assistant app's settings (then close and reopen the app).
 2. Open the Moments dashboard from the sidebar. To make it the default on that device, open your profile and pick it under **Dashboard**.
 
 ## 4. Set up test conditions
@@ -53,7 +53,7 @@ You don't need to open doors or drain batteries. **Developer tools → States** 
 
 ## 5. Run the checks
 
-Do every check on **iPhone**, **iPad portrait** and **iPad landscape**, in both light and dark mode (the iOS setting is enough; the app follows it).
+Do every check on a **phone**, a **tablet** in portrait and landscape, and a **desktop browser**, in both light and dark mode (the system setting is enough; the app follows it).
 
 | # | Check | Pass when |
 | --- | --- | --- |
@@ -66,10 +66,10 @@ Do every check on **iPhone**, **iPad portrait** and **iPad landscape**, in both 
 | 7 | Quiet house | With everything off, On now says "All quiet" and no chip row shows |
 | 8 | Media | The media tile appears only while playing |
 | 9 | Home and area views | Each floor lists its areas with the right photo, presence and temperature; tapping an area opens its view, whose sections follow the standard order |
-| 10 | Layout | iPhone shows one column; iPad shows two; nothing sits under the status bar or Dynamic Island |
+| 10 | Layout | A phone shows one column; a tablet shows two or more; nothing sits under the status bar or a camera cut-out |
 | 11 | Touch | Every button is easy to hit with a thumb; no accidental taps while scrolling |
 | 12 | Dark mode | All text is readable, including on highlighted (amber) buttons |
-| 13 | iPad area | With `areas_by_user`, signed in as the iPad user, the header and intents lead with that area; on your own phone they don't |
+| 13 | Tablet area | With `areas_by_user`, signed in as the tablet's user, the header and intents lead with that area; on your own phone they don't |
 | 14 | Update | After a new build, bump `?v=`, reset the frontend cache, and the console banner or a visible change confirms the new build |
 
 ## 6. Report results

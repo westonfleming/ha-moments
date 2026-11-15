@@ -6,7 +6,7 @@
 # An area card opens the view whose path is its area id, so give each area
 # view `path: <area id>` (or set navigation_path on the card).
 views:
-  # ---- Home: one section per floor. Side by side on an iPad, stacked on an iPhone.
+  # ---- Home: one section per floor. Side by side on a tablet or desktop, stacked on a phone.
   - title: Home
     path: home
     icon: mdi:home

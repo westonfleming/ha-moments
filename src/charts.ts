@@ -63,7 +63,7 @@ export const extent = (values: number[]): [number, number] | undefined => {
 
 /**
  * Tracks the host's width so a chart can draw at 1:1 scale, keeping its text
- * the same size on a phone and an iPad.
+ * the same size on a phone and a tablet.
  */
 export class WidthController {
   width: number;
