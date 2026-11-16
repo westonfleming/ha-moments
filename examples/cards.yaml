@@ -39,6 +39,33 @@ intents:
     when: [night]
 
 ---
+# An area's default light behaviour and the moments that override it, as chips under
+# its lights. A moment runs scenes, scripts, automations or buttons (one or a list).
+# It is active while its lights are on and unchanged since it started (or while
+# active_entity says so). Tapping the active moment returns the area to its default.
+type: custom:moments-area-moments
+area: bathroom
+lights: [light.bathroom]           # optional: found from the scenes or the area otherwise
+default:                           # or just: default: scene.bathroom_bright
+  name: Motion                     # chip name (default "Default")
+  icon: mdi:motion-sensor
+  # run: scene.bathroom_bright    # optional: without it, back to default turns the lights off
+                                 # and the area's own automations (here, motion) take over
+show_default: true
+moments:
+  - name: Bath
+    icon: mdi:bathtub
+    run: scene.bathroom_candlelight
+    dynamic: true                  # the scene changes its lights by itself; only on/off ends it
+  - name: Cleaning
+    icon: mdi:spray-bottle
+    run: [scene.bathroom_bright, script.bathroom_fan_on]
+  - name: Shower
+    icon: mdi:shower-head
+    run: script.shower
+    active_entity: input_boolean.shower_mode   # active while this is on
+
+---
 # Greeting, time, weather and indoor temperature. Updates every minute.
 type: custom:moments-header
 time_of_day_entity: input_select.time_of_day

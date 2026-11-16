@@ -44,7 +44,7 @@ To update a manual install, replace the file and bump the `?v=` number in the re
 | Section | Cards |
 | --- | --- |
 | Header (full width) | `moments-area-header`: presence, readings, alerts, all-lights switch |
-| Lighting | `moments-tile` per light, `moments-intents` for the area's scenes |
+| Lighting | `moments-tile` per light, `moments-area-moments` for the area's default and moments |
 | Climate & air | `moments-tile` for the thermostat, `moments-metric` for temperature, humidity, CO₂ and light |
 | Windows & doors | `moments-tile` for blinds (with `progress: position`), doors and locks |
 | Devices | `moments-tile` for appliances, plugs, fans and media |
@@ -68,6 +68,7 @@ An area card opens the view whose path is its area id, so give each area view `p
 | `moments-floor-heading` | A floor's name and "2 occupied · 5 lights on · 21.2° avg" | A floor (or a list of areas) |
 | `moments-header` | Greeting, time, weather, indoor temperature | A weather entity (optional) |
 | `moments-chips` | Alerts only when something needs you | Nothing |
+| `moments-area-moments` | An area's default and the moments that override it, as chips | Scenes, scripts or automations |
 | `moments-intents` | Your scenes and scripts as large buttons, ordered by time of day | Scenes or scripts |
 | `moments-on-now` | Everything on or open, with one-tap off | Nothing |
 | `moments-schedules` | Scheduled automations you can adjust | See [examples/schedules.yaml](examples/schedules.yaml) |
@@ -83,6 +84,36 @@ Every option is in [examples/cards.yaml](examples/cards.yaml). The charts and lo
 recorder:
   purge_keep_days: 90
 ```
+
+### Area moments
+
+Each area has a default: what its lights do on their own, such as a time-of-day Hue scene or a motion automation. Some areas also have moments that override it for a while, such as Movie or Bedtime. `moments-area-moments` shows them as chips under the area's lights: the default first, then the moments. One chip is lit at a time.
+
+```yaml
+type: custom:moments-area-moments
+area: living_room
+default:
+  name: Natural
+  run: scene.living_room_natural_light
+moments:
+  - name: Movie
+    icon: mdi:movie-open
+    run: scene.living_room_movie
+  - name: Bedtime
+    icon: mdi:bed
+    run: [scene.living_room_nightlight, script.bedtime]
+```
+
+| Option | Description |
+| --- | --- |
+| `run` | What starts a moment: a scene, script, automation or button, or a list run in order. |
+| `default` | The default's `name`, `icon` and `run` (or just a run target). Without `run`, going back to default turns the lights off and the area's own automations take over. |
+| `lights` | Lights a moment sets, on a moment or on the card. Found from the moment's scene (its members or Hue room), then the area, otherwise. |
+| `active_entity` / `active_state` | For a moment the lights can't tell: active while this entity is `on` (or `active_state`; for a select, the option with the moment's name). |
+| `dynamic` | The moment changes its lights by itself, so only switching them off ends it. Hue dynamic scenes are detected. |
+| `show_default` | `false` hides the default chip. |
+
+A moment is active while its lights are on and nobody has adjusted or switched them since it started, while its script runs, or while `active_entity` says so. Running the default ends it. Tapping the active moment returns the area to its default; tapping the lit default turns the lights off.
 
 ### Intents, schedules and time of day
 

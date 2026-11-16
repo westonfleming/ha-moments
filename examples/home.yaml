@@ -70,15 +70,22 @@ views:
             entity: light.living_room_ceiling
           - type: custom:moments-tile
             entity: light.living_room_floor_lamp
-          - type: custom:moments-intents
+          # The area's default and the moments that override it, as chips.
+          - type: custom:moments-area-moments
             area: living_room
-            intents:
-              - entity: scene.living_room_relax
-                name: Relax
-                when: [evening]
-              - entity: scene.movie
-                name: Movie
-                when: [evening, night]
+            default:
+              name: Natural
+              run: scene.living_room_natural_light
+            moments:
+              - name: Movie
+                icon: mdi:movie-open
+                run: scene.living_room_movie
+              - name: Relaxing
+                icon: mdi:sofa
+                run: scene.living_room_relax
+              - name: Bedtime
+                icon: mdi:bed
+                run: [scene.living_room_nightlight, script.bedtime]
 
       - type: grid
         cards:
