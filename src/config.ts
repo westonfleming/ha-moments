@@ -20,8 +20,13 @@ export interface Intent {
   area?: string;
   /** Area-level intent shared by several areas. Scripts receive `area_id`. */
   areas?: string[];
-  /** Entity whose "on" state marks this intent active (for scenes, which have no on state). */
+  /**
+   * Entity that marks this intent active: "on", or for a select / input_select (such as
+   * Hue's active scene) the option that names this scene. A scene's lights must still be on.
+   */
   active_entity?: string;
+  /** Lights this scene sets. Decides its active state, and tapping an active scene turns them off. */
+  lights?: string[];
 }
 
 export interface Schedule {

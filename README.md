@@ -86,13 +86,15 @@ recorder:
 
 ### Intents, schedules and time of day
 
-`moments-intents` shows scenes and scripts as large buttons, ordered by context. Each intent has `entity` (scene, script, automation or button) and optional `name`, `label`, `icon`, `when`, `area`/`areas` and `active_entity`.
+`moments-intents` shows scenes and scripts as large buttons, ordered by context. Each intent has `entity` (scene, script, automation or button) and optional `name`, `label`, `icon`, `when`, `area`/`areas`, `lights` and `active_entity`.
 
 | Option | Description |
 | --- | --- |
 | `when` | Contexts that move the intent to the front: `morning`, `day`, `evening`, `night`, and with a light sensor `dark`, `bright`. |
 | `area` / `areas` on an intent | Makes it an area intent. Scripts run from an area receive `area_id`, so one script can serve several areas ([examples/scripts.yaml](examples/scripts.yaml)). |
-| `area` on the card | Shows only that area's intents (`include_house: true` adds the house-level ones). |
+| `area` on the card | Intents without an area belong to the card's area; intents of other areas are hidden. |
+| `lights` | The lights a scene sets, on an intent or on the card. A scene shows as active only while they are on and were not switched back on by hand since, and tapping an active scene turns them off (`toggle: false` on the card runs it again instead). Without `lights`, they are found from the scene's members, its Hue room or zone, or its area. |
+| `active_entity` | Marks the intent active when it is `on`, or for a select such as Hue's active scene, when its option names the scene. |
 | `areas_by_user` | HA user id to area id, on `moments-intents` and `moments-header`. That user sees their area first. Use for docked tablets. |
 
 Without a helper, the clock decides the time of day (morning 05:00, day 11:00, evening 17:00, night 22:00). To control it yourself, create a **Dropdown** helper named `time_of_day` with the options `morning`, `day`, `evening` and `night`, set it from an automation, and pass `time_of_day_entity` to the cards. [examples/time-of-day.yaml](examples/time-of-day.yaml) has a ready-made helper and automation, and [examples/schedules.yaml](examples/schedules.yaml) the helpers behind `moments-schedules`.

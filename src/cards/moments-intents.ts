@@ -3,7 +3,8 @@ import { customElement, property, state } from "lit/decorators.js";
 import { tokens } from "../styles/tokens";
 import { callWithFeedback, domainOf, fireMoreInfo, haptic, nameOf } from "../helpers";
 import { currentContext } from "../context/daylight";
-import { intentGroups, isActive, orderByContext, serviceFor, validateIntents } from "../intents";
+import { intentGroups, isActive, lightsFor, orderByContext, serviceFor, validateIntents } from "../intents";
+import type { IntentScope } from "../intents";
 import type { HomeAssistant, LovelaceCardConfig } from "../types";
 import type { Intent } from "../config";
 
@@ -16,7 +17,10 @@ interface IntentsConfig extends LovelaceCardConfig {
   dark_below?: number;
   area?: string;
   areas_by_user?: Record<string, string>;
-  include_house?: boolean;
+  /** Lights for every scene's active state; see `lightsFor`. */
+  lights?: string[];
+  /** Tapping an active scene turns its lights off (default true). */
+  toggle?: boolean;
 }
 
 const LONG_PRESS_MS = 500;
@@ -67,7 +71,18 @@ export class MomentsIntents extends LitElement {
     this.cancelPress();
   }
 
-  private run(intent: Intent, area?: string) {
+  private get scope(): IntentScope {
+    return { area: this.config.area, lights: this.config.lights };
+  }
+
+  private run(intent: Intent, area?: string, active = false) {
+    if (active && this.config.toggle !== false && domainOf(intent.entity) === "scene") {
+      const lights = lightsFor(this.hass!, intent, this.scope);
+      if (lights.length) {
+        callWithFeedback(this, this.hass, "light", "turn_off", { entity_id: lights });
+        return;
+      }
+    }
     const { domain, service, data } = serviceFor(intent, area);
     callWithFeedback(this, this.hass, domain, service, data);
   }
@@ -97,20 +112,20 @@ export class MomentsIntents extends LitElement {
     window.removeEventListener("scroll", this.cancelPress, { capture: true });
   };
 
-  private onClick(e: Event, intent: Intent, area?: string) {
+  private onClick(e: Event, intent: Intent, area?: string, active = false) {
     this.cancelPress();
     if (this.longPressed) {
       this.longPressed = false;
       e.preventDefault();
       return;
     }
-    this.run(intent, area);
+    this.run(intent, area, active);
   }
 
   private renderIntent(intent: Intent, shown: Intent[], area?: string) {
     const entity = this.hass!.states[intent.entity];
     const name = intent.name ?? (entity ? nameOf(entity) : intent.entity);
-    const active = isActive(this.hass, intent, shown);
+    const active = isActive(this.hass, intent, shown, Date.now(), this.scope);
     return html`<button
       class="intent ${active ? "on" : ""}"
       aria-pressed=${active ? "true" : "false"}
@@ -121,7 +136,7 @@ export class MomentsIntents extends LitElement {
       @pointercancel=${this.cancelPress}
       @pointerleave=${this.cancelPress}
       @contextmenu=${(e: Event) => e.preventDefault()}
-      @click=${(e: Event) => this.onClick(e, intent, area)}
+      @click=${(e: Event) => this.onClick(e, intent, area, active)}
     >
       <span class="icon"><ha-icon .icon=${intent.icon ?? entity?.attributes.icon ?? "mdi:palette"}></ha-icon></span>
       <span class="text">
@@ -137,7 +152,7 @@ export class MomentsIntents extends LitElement {
     const c = this.config;
     const userArea = this.hass.user ? c.areas_by_user?.[this.hass.user.id] : undefined;
     const tags = currentContext(this.hass, c);
-    const groups = intentGroups(c.intents, { area: c.area, userArea, includeHouse: c.include_house }).map((g) => ({
+    const groups = intentGroups(c.intents, { area: c.area, userArea }).map((g) => ({
       ...g,
       intents: orderByContext(g.intents, tags),
     }));
