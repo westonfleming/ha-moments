@@ -21,13 +21,15 @@ exclude:
 
 ---
 # Scene and script buttons, ordered by time of day and daylight.
-# Each intent: entity, plus optional name, label, icon, when, area/areas, active_entity.
+# Each intent: entity, plus optional name, label, icon, when, area/areas, lights, active_entity.
+# A scene is active while its lights are on; tapping an active scene turns them off.
 type: custom:moments-intents
 time_of_day_entity: input_select.time_of_day
 illuminance_entity: sensor.outdoor_motion_illuminance
 dark_below: 50
-area: living_room        # optional: only this area's intents
-include_house: true      # with area: also show house-level intents
+area: living_room        # optional: intents without an area belong to it
+lights: [light.living_room]   # optional: lights the scenes set (found automatically otherwise)
+toggle: true             # tap an active scene to turn its lights off
 intents:
   - entity: scene.movie
     name: Movie
