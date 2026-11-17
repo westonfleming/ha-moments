@@ -1,4 +1,4 @@
-# Example scripts for Moments intents, as a Home Assistant package.
+# Example scripts a Moments moment can run, as a Home Assistant package.
 #
 # Copy to /config/packages/moments_scripts.yaml (with
 # `homeassistant: packages: !include_dir_named packages` in configuration.yaml)
@@ -15,7 +15,7 @@ input_boolean:
 
 script:
   # ── Room scripts shared by several areas ─────────────────────────────────
-  # Moments passes `area_id` when an intent with `areas:` is run from a room.
+  # Call them with `area_id` from an area's own scripts, automations or voice.
 
   room_lights_up:
     alias: Room lights up

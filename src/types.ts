@@ -5,6 +5,8 @@ export interface HassEntity {
   state: string;
   attributes: Record<string, any>;
   last_changed: string;
+  /** Changes with attributes too (brightness, colour). */
+  last_updated?: string;
 }
 
 export interface EntityRegistryEntry {

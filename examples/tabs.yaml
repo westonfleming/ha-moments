@@ -26,25 +26,6 @@ views:
       - type: grid
         cards:
           - type: heading
-            heading: Moments
-          - type: custom:moments-intents
-            illuminance_entity: sensor.outdoor_motion_illuminance
-            intents:
-              - entity: scene.movie
-                name: Movie
-                icon: mdi:movie-open
-                when: [evening, night]
-              - entity: scene.dinner
-                name: Dinner
-                icon: mdi:silverware-fork-knife
-                when: [evening]
-              - entity: script.bedtime
-                name: Bedtime
-                icon: mdi:bed
-                when: [night]
-      - type: grid
-        cards:
-          - type: heading
             heading: On now
           - type: custom:moments-on-now
 
