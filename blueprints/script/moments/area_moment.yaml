@@ -1,0 +1,274 @@
+blueprint:
+  name: Moments – area moment
+  description: >
+    One moment in one area, such as watching a film or winding down. You decide what
+    the moment means: the lights it uses when it's dark or bright outside, what the
+    blinds do, and whether it needs someone in the area. Create one script from this
+    blueprint for each moment, and show it as a chip with the moments-area-moments card.
+  domain: script
+  author: Moments
+  source_url: https://github.com/westonfleming/ha-moments/blob/main/blueprints/script/moments/area_moment.yaml
+  homeassistant:
+    min_version: 2024.10.0
+  input:
+    moment:
+      name: Moment
+      input:
+        moment_name:
+          name: Name
+          description: The moment's name. It must match the chip's name on the card.
+          selector:
+            text: {}
+        moment_helper:
+          name: Area moment helper
+          description: >
+            A Text helper (or a Dropdown helper that lists this name) that holds the
+            area's current moment. The card lights the chip that matches it.
+          default: ""
+          selector:
+            entity:
+              filter:
+                - domain: [input_text, input_select]
+        presence_sensor:
+          name: Presence sensor
+          description: Optional. The area's occupancy, presence or motion sensor.
+          default: ""
+          selector:
+            entity:
+              filter:
+                - domain: binary_sensor
+        require_presence:
+          name: Only when someone is there
+          description: Do nothing while the presence sensor says the area is empty.
+          default: false
+          selector:
+            boolean: {}
+
+    outdoor_light:
+      name: Outdoor light
+      input:
+        outdoor_light_sensor:
+          name: Outdoor light sensor
+          description: Optional. Without it, the moment always uses its dark lighting.
+          default: ""
+          selector:
+            entity:
+              filter:
+                - domain: sensor
+                  device_class: illuminance
+        dark_below:
+          name: Dark below
+          description: Outdoor light level, in lux, under which it counts as dark.
+          default: 50
+          selector:
+            number:
+              min: 0
+              max: 2000
+              unit_of_measurement: lx
+              mode: box
+
+    lighting:
+      name: Lighting
+      input:
+        scene_dark:
+          name: Scene when dark
+          description: Optional. Used when it's dark outside.
+          default: ""
+          selector:
+            entity:
+              filter:
+                - domain: scene
+        scene_bright:
+          name: Scene when bright
+          description: Optional. Used when it's bright outside. Defaults to the dark scene.
+          default: ""
+          selector:
+            entity:
+              filter:
+                - domain: scene
+        lights:
+          name: Lights
+          description: Without a scene, these lights are set to the levels below.
+          default: []
+          selector:
+            entity:
+              multiple: true
+              filter:
+                - domain: light
+        brightness_dark:
+          name: Brightness when dark
+          default: 30
+          selector:
+            number:
+              min: 0
+              max: 100
+              unit_of_measurement: "%"
+        brightness_bright:
+          name: Brightness when bright
+          default: 70
+          selector:
+            number:
+              min: 0
+              max: 100
+              unit_of_measurement: "%"
+        color_temp_kelvin:
+          name: Colour temperature
+          description: 0 keeps each light's colour.
+          default: 0
+          selector:
+            number:
+              min: 0
+              max: 6500
+              step: 100
+              unit_of_measurement: K
+              mode: box
+
+    blinds:
+      name: Blinds
+      collapsed: true
+      input:
+        covers:
+          name: Blinds
+          default: []
+          selector:
+            entity:
+              multiple: true
+              filter:
+                - domain: cover
+        cover_action:
+          name: What the blinds do
+          default: none
+          selector:
+            select:
+              options:
+                - label: Nothing
+                  value: none
+                - label: Close
+                  value: close
+                - label: Open
+                  value: open
+                - label: Move to a position
+                  value: position
+        cover_position:
+          name: Position
+          description: Used with "Move to a position". 0 is closed.
+          default: 20
+          selector:
+            number:
+              min: 0
+              max: 100
+              step: 10
+              unit_of_measurement: "%"
+        cover_only_above:
+          name: Only when brighter than
+          description: >
+            Move the blinds only when the outdoor light is above this level, e.g. close
+            them against glare. 0 always moves them.
+          default: 0
+          selector:
+            number:
+              min: 0
+              max: 100000
+              unit_of_measurement: lx
+              mode: box
+
+    more:
+      name: More actions
+      collapsed: true
+      input:
+        extra_actions:
+          name: Also do
+          description: Anything else the moment does, such as turning on the TV or music.
+          default: []
+          selector:
+            action: {}
+
+mode: restart
+
+variables:
+  moment_name: !input moment_name
+  moment_helper: !input moment_helper
+  presence_sensor: !input presence_sensor
+  require_presence: !input require_presence
+  outdoor_light_sensor: !input outdoor_light_sensor
+  dark_below: !input dark_below
+  scene_dark: !input scene_dark
+  scene_bright: !input scene_bright
+  lights: !input lights
+  brightness_dark: !input brightness_dark
+  brightness_bright: !input brightness_bright
+  color_temp_kelvin: !input color_temp_kelvin
+  covers: !input covers
+  cover_action: !input cover_action
+  cover_position: !input cover_position
+  cover_only_above: !input cover_only_above
+  outdoor_lux: >
+    {{ states(outdoor_light_sensor) | float(none) if outdoor_light_sensor else none }}
+  is_dark: "{{ outdoor_lux is none or outdoor_lux < dark_below | float }}"
+  scene: "{{ scene_dark if is_dark or not scene_bright else scene_bright }}"
+
+sequence:
+  - if:
+      - condition: template
+        value_template: "{{ require_presence and presence_sensor and is_state(presence_sensor, 'off') }}"
+    then:
+      - stop: Nobody is in the area
+
+  - choose:
+      - conditions: "{{ scene != '' }}"
+        sequence:
+          - action: scene.turn_on
+            target:
+              entity_id: "{{ scene }}"
+      - conditions: "{{ lights | count > 0 }}"
+        sequence:
+          - action: light.turn_on
+            target:
+              entity_id: "{{ lights }}"
+            data: >
+              {% set d = {'brightness_pct': (brightness_dark if is_dark else brightness_bright) | int} %}
+              {{ dict(d, color_temp_kelvin=color_temp_kelvin | int) if color_temp_kelvin | int > 0 else d }}
+
+  - if:
+      - condition: template
+        value_template: >
+          {{ covers | count > 0 and cover_action != 'none'
+             and (cover_only_above | float == 0 or (outdoor_lux is not none and outdoor_lux > cover_only_above | float)) }}
+    then:
+      - choose:
+          - conditions: "{{ cover_action == 'close' }}"
+            sequence:
+              - action: cover.close_cover
+                target:
+                  entity_id: "{{ covers }}"
+          - conditions: "{{ cover_action == 'open' }}"
+            sequence:
+              - action: cover.open_cover
+                target:
+                  entity_id: "{{ covers }}"
+          - conditions: "{{ cover_action == 'position' }}"
+            sequence:
+              - action: cover.set_cover_position
+                target:
+                  entity_id: "{{ covers }}"
+                data:
+                  position: "{{ cover_position | int }}"
+
+  - choose: []
+    default: !input extra_actions
+
+  - choose:
+      - conditions: "{{ moment_helper.startswith('input_text.') }}"
+        sequence:
+          - action: input_text.set_value
+            target:
+              entity_id: "{{ moment_helper }}"
+            data:
+              value: "{{ moment_name }}"
+      - conditions: "{{ moment_helper.startswith('input_select.') }}"
+        sequence:
+          - action: input_select.select_option
+            target:
+              entity_id: "{{ moment_helper }}"
+            data:
+              option: "{{ moment_name }}"

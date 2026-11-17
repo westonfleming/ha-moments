@@ -74,6 +74,11 @@ export interface AreaMomentsConfig {
   /** A run target, or the default's name, icon and run. */
   default?: RunTarget | AreaDefault;
   moments?: Moment[];
+  /**
+   * The area's current-moment helper (input_text or input_select), as the moment
+   * blueprint records it. A moment is active while it holds the moment's name.
+   */
+  moment_entity?: string;
   /** Show the default as the first chip (default true). The card shows nothing without moments. */
   show_default?: boolean;
 }
@@ -136,6 +141,9 @@ export const areaLights = (hass: HomeAssistant, c: AreaMomentsConfig): string[] 
   return [...new Set((c.moments ?? []).flatMap((m) => momentLights(hass, m, c)))];
 };
 
+/** The entity that says a moment is on: its own `active_entity`, or the card's `moment_entity`. */
+const markerOf = (m: Moment, c: AreaMomentsConfig) => m.active_entity ?? c.moment_entity;
+
 const norm = (s: unknown) => (typeof s === "string" ? s.trim().toLowerCase() : "");
 
 const isDynamic = (hass: HomeAssistant, m: Moment) =>
@@ -158,10 +166,11 @@ export const momentHolds = (
   const on = lights.map((id) => hass.states[id]).filter((e): e is HassEntity => e?.state === "on");
   if (lights.length && !on.length) return false;
 
-  if (m.active_entity) {
-    const state = hass.states[m.active_entity]?.state;
-    const d = domainOf(m.active_entity);
-    const want = m.active_state ?? (d === "select" || d === "input_select" ? m.name : "on");
+  const marker = markerOf(m, c);
+  if (marker) {
+    const state = hass.states[marker]?.state;
+    const d = domainOf(marker);
+    const want = m.active_state ?? (["select", "input_select", "input_text"].includes(d) ? m.name : "on");
     return norm(state) === norm(want);
   }
 
@@ -194,8 +203,9 @@ export const activeMoment = (hass: HomeAssistant | undefined, c: AreaMomentsConf
   let bestAt = -Infinity;
   moments.forEach((m, i) => {
     if (!momentHolds(hass, m, c, now)) return;
-    const at = m.active_entity ? Infinity : startedAt(hass, m.run) ?? -Infinity;
-    if (!m.active_entity && at < defaultAt) return;
+    const marked = !!markerOf(m, c);
+    const at = marked ? Infinity : startedAt(hass, m.run) ?? -Infinity;
+    if (!marked && at < defaultAt) return;
     if (best === -1 || at > bestAt) {
       best = i;
       bestAt = at;
@@ -208,13 +218,24 @@ export const activeMoment = (hass: HomeAssistant | undefined, c: AreaMomentsConf
 export const defaultActive = (hass: HomeAssistant | undefined, c: AreaMomentsConfig, now = Date.now()) =>
   !!hass && activeMoment(hass, c, now) === -1 && areaLights(hass, c).some((id) => hass.states[id]?.state === "on");
 
-/** The calls that switch a lit moment off: stop its running scripts, then turn its lights off. */
+/** The call that clears the card's moment helper, if it has one. */
+export const clearMoment = (hass: HomeAssistant, c: AreaMomentsConfig): ServiceCall[] => {
+  const id = c.moment_entity;
+  if (!id || !hass.states[id]) return [];
+  if (domainOf(id) === "input_text") return [{ domain: "input_text", service: "set_value", data: { entity_id: id, value: "" } }];
+  const options: unknown = hass.states[id].attributes.options;
+  const none = Array.isArray(options) ? options.find((o) => ["none", "off", "default", ""].includes(norm(o))) : undefined;
+  return none === undefined ? [] : [{ domain: domainOf(id), service: "select_option", data: { entity_id: id, option: none } }];
+};
+
+/** The calls that switch a lit moment off: stop its running scripts, turn its lights off, clear the helper. */
 export const switchOff = (hass: HomeAssistant, m: Moment, c: AreaMomentsConfig): ServiceCall[] => {
   const scripts = runList(m.run).filter((id) => domainOf(id) === "script" && hass.states[id]?.state === "on");
   const lights = momentLights(hass, m, c);
   return [
     ...scripts.map((entity_id) => ({ domain: "script", service: "turn_off", data: { entity_id } })),
     ...(lights.length ? [{ domain: "light", service: "turn_off", data: { entity_id: lights } }] : []),
+    ...clearMoment(hass, c),
   ];
 };
 

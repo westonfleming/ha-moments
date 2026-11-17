@@ -6,6 +6,7 @@ import {
   activeMoment,
   areaLights,
   callsFor,
+  clearMoment,
   defaultActive,
   defaultOf,
   runList,
@@ -90,8 +91,9 @@ export class MomentsAreaMoments extends LitElement {
       return;
     }
     const run = defaultOf(c).run;
-    if (runList(run).length) this.call(callsFor(run));
-    else if (lights.length) this.call([{ domain: "light", service: "turn_on", data: { entity_id: lights } }]);
+    const clear = clearMoment(this.hass!, c);
+    if (runList(run).length) this.call([...callsFor(run), ...clear]);
+    else if (lights.length) this.call([{ domain: "light", service: "turn_on", data: { entity_id: lights } }, ...clear]);
   }
 
   private onPointerDown(e: PointerEvent, entity: string | undefined) {
