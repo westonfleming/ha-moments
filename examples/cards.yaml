@@ -20,37 +20,18 @@ exclude:
   - switch.fridge
 
 ---
-# Scene and script buttons, ordered by time of day and daylight.
-# Each intent: entity, plus optional name, label, icon, when, area/areas, lights, active_entity.
-# A scene is active while its lights are on; tapping an active scene turns them off.
-type: custom:moments-intents
-time_of_day_entity: input_select.time_of_day
-illuminance_entity: sensor.outdoor_motion_illuminance
-dark_below: 50
-area: living_room        # optional: intents without an area belong to it
-lights: [light.living_room]   # optional: lights the scenes set (found automatically otherwise)
-toggle: true             # tap an active scene to turn its lights off
-intents:
-  - entity: scene.movie
-    name: Movie
-    icon: mdi:movie-open
-    when: [evening, night]
-  - entity: script.bedtime
-    when: [night]
-
----
 # An area's default light behaviour and the moments that override it, as chips under
 # its lights. A moment runs scenes, scripts, automations or buttons (one or a list).
 # It is active while its lights are on and unchanged since it started (or while
-# active_entity says so). Tapping the active moment returns the area to its default.
+# active_entity says so). Tapping a lit chip turns it and its lights off.
+# An area with only a default shows nothing.
 type: custom:moments-area-moments
 area: bathroom
 lights: [light.bathroom]           # optional: found from the scenes or the area otherwise
 default:                           # or just: default: scene.bathroom_bright
   name: Motion                     # chip name (default "Default")
   icon: mdi:motion-sensor
-  # run: scene.bathroom_bright    # optional: without it, back to default turns the lights off
-                                 # and the area's own automations (here, motion) take over
+  # run: scene.bathroom_bright    # optional: without it, the chip turns the lights on
 show_default: true
 moments:
   - name: Bath

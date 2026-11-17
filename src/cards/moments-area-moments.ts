@@ -8,12 +8,12 @@ import {
   callsFor,
   defaultActive,
   defaultOf,
-  returnToDefault,
   runList,
+  switchOff,
   validateAreaMoments,
   type AreaMomentsConfig,
 } from "../moments";
-import type { ServiceCall } from "../intents";
+import type { ServiceCall } from "../moments";
 import type { HomeAssistant, LovelaceCardConfig } from "../types";
 
 type Config = AreaMomentsConfig & LovelaceCardConfig;
@@ -23,8 +23,8 @@ const MOVE_TOLERANCE = 10;
 
 /**
  * An area's moments as small chips, for under its lights: the default first, then
- * the moments that override it. One is active at a time; tapping the active moment
- * returns the area to its default.
+ * the moments that override it. One is lit at a time; tapping the lit chip turns it
+ * and its lights off. Areas with only a default show nothing.
  */
 @customElement("moments-area-moments")
 export class MomentsAreaMoments extends LitElement {
@@ -78,7 +78,8 @@ export class MomentsAreaMoments extends LitElement {
 
   private tapMoment(i: number, active: boolean) {
     const c = this.config;
-    this.call(active ? returnToDefault(this.hass!, c) : callsFor(c.moments![i].run));
+    const m = c.moments![i];
+    this.call(active ? switchOff(this.hass!, m, c) : callsFor(m.run));
   }
 
   private tapDefault(active: boolean) {
@@ -133,7 +134,7 @@ export class MomentsAreaMoments extends LitElement {
     return html`<button
       class="chip ${active ? "on" : ""}"
       aria-pressed=${active ? "true" : "false"}
-      title=${active ? `${name}: tap to end` : name}
+      title=${active ? `${name}: tap to turn off` : name}
       @pointerdown=${(e: PointerEvent) => this.onPointerDown(e, entity)}
       @pointermove=${this.onPointerMove}
       @pointerup=${() => this.press && window.clearTimeout(this.press.timer)}
@@ -147,7 +148,7 @@ export class MomentsAreaMoments extends LitElement {
   }
 
   render() {
-    if (!this.hass || !this.config) return nothing;
+    if (!this.hass || !this.config || !this.config.moments?.length) return nothing;
     void this.tick;
     const c = this.config;
     const now = Date.now();

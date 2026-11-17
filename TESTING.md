@@ -4,7 +4,7 @@ How to put a test build of Moments on your Home Assistant and check it on the de
 
 ## Before you start
 
-- Intents exist as scenes or scripts in Home Assistant (#5).
+- Each area's moments exist as scenes or scripts in Home Assistant.
 - The **File editor** add-on is installed: **Settings → Add-ons → Add-on store → File editor → Install → Start**. Turn on **Show in sidebar**.
 - Your user has **Advanced mode** on (click your name at the bottom of the sidebar, then **Advanced mode**). It's needed to see dashboard Resources.
 
@@ -60,8 +60,8 @@ Do every check on a **phone**, a **tablet** in portrait and landscape, and a **d
 | 1 | Dashboard loads | No red "Custom element doesn't exist" cards |
 | 2 | Greeting | Matches the time of day, and changes within a minute of changing the helper |
 | 3 | Chips | Open-door and low-battery chips appear; tapping one opens its details; they vanish when the state is set back |
-| 4 | Intents | Each button runs its scene or script; the one for the current time of day is first |
-| 5 | Active intent | A running script, or the last scene, is highlighted (scenes once #10 is done) |
+| 4 | Area moments | Each chip runs its scene or script; an area with only a default shows no chips |
+| 5 | Active moment | The last moment is lit while its lights are on and untouched; tapping it turns it and its lights off |
 | 6 | On now | Lists exactly what's on; the toggle turns each off; **All lights off** turns off only lights |
 | 7 | Quiet house | With everything off, On now says "All quiet" and no chip row shows |
 | 8 | Media | The media tile appears only while playing |
@@ -69,7 +69,7 @@ Do every check on a **phone**, a **tablet** in portrait and landscape, and a **d
 | 10 | Layout | A phone shows one column; a tablet shows two or more; nothing sits under the status bar or a camera cut-out |
 | 11 | Touch | Every button is easy to hit with a thumb; no accidental taps while scrolling |
 | 12 | Dark mode | All text is readable, including on highlighted (amber) buttons |
-| 13 | Tablet area | With `areas_by_user`, signed in as the tablet's user, the header and intents lead with that area; on your own phone they don't |
+| 13 | Tablet area | With `areas_by_user`, signed in as the tablet's user, the header leads with that area; on your own phone they don't |
 | 14 | Update | After a new build, bump `?v=`, reset the frontend cache, and the console banner or a visible change confirms the new build |
 
 ## 6. Report results

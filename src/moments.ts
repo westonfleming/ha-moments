@@ -1,9 +1,42 @@
 // Area moments: an area's default light behaviour and the named moments that override it.
 
-import { domainOf } from "./helpers";
-import { lightsFor, SCENE_ACTIVE_MS } from "./intents";
+import { areaOf, domainOf } from "./helpers";
+import { entitiesInArea } from "./metrics";
 import type { HassEntity, HomeAssistant } from "./types";
-import type { ServiceCall } from "./intents";
+
+export interface ServiceCall {
+  domain: string;
+  service: string;
+  data: Record<string, any>;
+}
+
+/** Without known lights, a moment counts as active this long after it started. */
+export const MOMENT_ACTIVE_MS = 4 * 60 * 60 * 1000;
+
+const isLight = (id: string) => domainOf(id) === "light";
+
+/**
+ * The lights an entity (usually a scene) sets: the scene's own members (`entity_id`
+ * attribute), its Hue room or zone (`group_name`), or the lights in `area` or the
+ * entity's own area. Empty when none are found.
+ */
+export const lightsFor = (hass: HomeAssistant, entityId: string, area?: string): string[] => {
+  const scene = hass.states[entityId];
+  const members: unknown = scene?.attributes.entity_id;
+  if (Array.isArray(members)) {
+    const lights = members.filter((id): id is string => typeof id === "string" && isLight(id));
+    if (lights.length) return lights;
+  }
+  const group = scene?.attributes.group_name;
+  if (typeof group === "string") {
+    const hue = Object.values(hass.states).find(
+      (e) => isLight(e.entity_id) && e.attributes.is_hue_group && e.attributes.friendly_name === group,
+    );
+    if (hue) return [hue.entity_id];
+  }
+  const where = area ?? areaOf(hass, entityId);
+  return where ? entitiesInArea(hass, where).filter(isLight) : [];
+};
 
 /** Anything a moment can run: a scene, script, automation or button, or several in order. */
 export type RunTarget = string | string[];
@@ -30,7 +63,7 @@ export interface AreaDefault {
   /** Chip name (default "Default"). */
   name?: string;
   icon?: string;
-  /** What returns the area to its default. Without it, returning to default turns the lights off. */
+  /** What the default chip runs. Without it, the chip turns the area's lights on. */
   run?: RunTarget;
 }
 
@@ -41,7 +74,7 @@ export interface AreaMomentsConfig {
   /** A run target, or the default's name, icon and run. */
   default?: RunTarget | AreaDefault;
   moments?: Moment[];
-  /** Show the default as the first chip (default true). */
+  /** Show the default as the first chip (default true). The card shows nothing without moments. */
   show_default?: boolean;
 }
 
@@ -89,7 +122,7 @@ export const momentLights = (hass: HomeAssistant, m: Moment, c: AreaMomentsConfi
   if (m.lights) return m.lights;
   if (c.lights) return c.lights;
   const scene = runList(m.run).find((id) => domainOf(id) === "scene") ?? runList(m.run)[0];
-  return scene ? lightsFor(hass, { entity: scene }, { area: c.area }) : [];
+  return scene ? lightsFor(hass, scene, c.area) : [];
 };
 
 /** The area's lights, for the default chip and for returning to default. */
@@ -97,7 +130,7 @@ export const areaLights = (hass: HomeAssistant, c: AreaMomentsConfig): string[] 
   if (c.lights) return c.lights;
   const d = runList(defaultOf(c).run)[0];
   if (d) {
-    const found = lightsFor(hass, { entity: d }, { area: c.area });
+    const found = lightsFor(hass, d, c.area);
     if (found.length) return found;
   }
   return [...new Set((c.moments ?? []).flatMap((m) => momentLights(hass, m, c)))];
@@ -137,7 +170,7 @@ export const momentHolds = (
 
   const at = startedAt(hass, m.run);
   if (at === undefined || at > now + 60_000) return false;
-  if (!lights.length) return now - at <= SCENE_ACTIVE_MS;
+  if (!lights.length) return now - at <= MOMENT_ACTIVE_MS;
   const after = (e: HassEntity, key: "last_changed" | "last_updated") => {
     const t = parse(e[key]);
     return t !== undefined && t > at + SETTLE_MS;
@@ -175,12 +208,14 @@ export const activeMoment = (hass: HomeAssistant | undefined, c: AreaMomentsConf
 export const defaultActive = (hass: HomeAssistant | undefined, c: AreaMomentsConfig, now = Date.now()) =>
   !!hass && activeMoment(hass, c, now) === -1 && areaLights(hass, c).some((id) => hass.states[id]?.state === "on");
 
-/** The calls that return an area to its default: the default's run, or its lights off. */
-export const returnToDefault = (hass: HomeAssistant, c: AreaMomentsConfig): ServiceCall[] => {
-  const run = defaultOf(c).run;
-  if (runList(run).length) return callsFor(run);
-  const lights = areaLights(hass, c);
-  return lights.length ? [{ domain: "light", service: "turn_off", data: { entity_id: lights } }] : [];
+/** The calls that switch a lit moment off: stop its running scripts, then turn its lights off. */
+export const switchOff = (hass: HomeAssistant, m: Moment, c: AreaMomentsConfig): ServiceCall[] => {
+  const scripts = runList(m.run).filter((id) => domainOf(id) === "script" && hass.states[id]?.state === "on");
+  const lights = momentLights(hass, m, c);
+  return [
+    ...scripts.map((entity_id) => ({ domain: "script", service: "turn_off", data: { entity_id } })),
+    ...(lights.length ? [{ domain: "light", service: "turn_off", data: { entity_id: lights } }] : []),
+  ];
 };
 
 const isTarget = (v: unknown) =>

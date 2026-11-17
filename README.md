@@ -69,7 +69,6 @@ An area card opens the view whose path is its area id, so give each area view `p
 | `moments-header` | Greeting, time, weather, indoor temperature | A weather entity (optional) |
 | `moments-chips` | Alerts only when something needs you | Nothing |
 | `moments-area-moments` | An area's default and the moments that override it, as chips | Scenes, scripts or automations |
-| `moments-intents` | Your scenes and scripts as large buttons, ordered by time of day | Scenes or scripts |
 | `moments-on-now` | Everything on or open, with one-tap off | Nothing |
 | `moments-schedules` | Scheduled automations you can adjust | See [examples/schedules.yaml](examples/schedules.yaml) |
 | `moments-weather` | Today in detail, then 7 days: condition icon, rain (mm), wind and gusts, low–high bar | A weather entity with a daily forecast |
@@ -107,26 +106,15 @@ moments:
 | Option | Description |
 | --- | --- |
 | `run` | What starts a moment: a scene, script, automation or button, or a list run in order. |
-| `default` | The default's `name`, `icon` and `run` (or just a run target). Without `run`, going back to default turns the lights off and the area's own automations take over. |
+| `default` | The default chip's `name`, `icon` and `run` (or just a run target). Without `run`, the chip turns the area's lights on. |
 | `lights` | Lights a moment sets, on a moment or on the card. Found from the moment's scene (its members or Hue room), then the area, otherwise. |
 | `active_entity` / `active_state` | For a moment the lights can't tell: active while this entity is `on` (or `active_state`; for a select, the option with the moment's name). |
 | `dynamic` | The moment changes its lights by itself, so only switching them off ends it. Hue dynamic scenes are detected. |
 | `show_default` | `false` hides the default chip. |
 
-A moment is active while its lights are on and nobody has adjusted or switched them since it started, while its script runs, or while `active_entity` says so. Running the default ends it. Tapping the active moment returns the area to its default; tapping the lit default turns the lights off.
+A moment is active while its lights are on and nobody has adjusted or switched them since it started, while its script runs, or while `active_entity` says so. Running the default ends it. Tapping a lit chip, moment or default, turns it off: its running scripts stop and its lights go off. An area with moments but no default shows just the moments, and an area with only a default shows nothing.
 
-### Intents, schedules and time of day
-
-`moments-intents` shows scenes and scripts as large buttons, ordered by context. Each intent has `entity` (scene, script, automation or button) and optional `name`, `label`, `icon`, `when`, `area`/`areas`, `lights` and `active_entity`.
-
-| Option | Description |
-| --- | --- |
-| `when` | Contexts that move the intent to the front: `morning`, `day`, `evening`, `night`, and with a light sensor `dark`, `bright`. |
-| `area` / `areas` on an intent | Makes it an area intent. Scripts run from an area receive `area_id`, so one script can serve several areas ([examples/scripts.yaml](examples/scripts.yaml)). |
-| `area` on the card | Intents without an area belong to the card's area; intents of other areas are hidden. |
-| `lights` | The lights a scene sets, on an intent or on the card. A scene shows as active only while they are on and were not switched back on by hand since, and tapping an active scene turns them off (`toggle: false` on the card runs it again instead). Without `lights`, they are found from the scene's members, its Hue room or zone, or its area. |
-| `active_entity` | Marks the intent active when it is `on`, or for a select such as Hue's active scene, when its option names the scene. |
-| `areas_by_user` | HA user id to area id, on `moments-intents` and `moments-header`. That user sees their area first. Use for docked tablets. |
+### Schedules and time of day
 
 Without a helper, the clock decides the time of day (morning 05:00, day 11:00, evening 17:00, night 22:00). To control it yourself, create a **Dropdown** helper named `time_of_day` with the options `morning`, `day`, `evening` and `night`, set it from an automation, and pass `time_of_day_entity` to the cards. [examples/time-of-day.yaml](examples/time-of-day.yaml) has a ready-made helper and automation, and [examples/schedules.yaml](examples/schedules.yaml) the helpers behind `moments-schedules`.
 

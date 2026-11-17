@@ -4,7 +4,8 @@ import {
   callsFor,
   defaultActive,
   momentHolds,
-  returnToDefault,
+  switchOff,
+  lightsFor,
   validateAreaMoments,
   type AreaMomentsConfig,
 } from "../src/moments";
@@ -93,11 +94,12 @@ describe("activeMoment", () => {
   });
 });
 
-describe("returnToDefault", () => {
-  it("runs the default, or turns the lights off without one", () => {
-    const hass = setup({});
-    expect(returnToDefault(hass, config)).toEqual([{ domain: "scene", service: "turn_on", data: { entity_id: "scene.natural" } }]);
-    expect(returnToDefault(hass, { ...config, default: undefined })).toEqual([
+describe("switchOff", () => {
+  it("stops the moment's running scripts and turns its lights off", () => {
+    const hass = setup({ "script.bedtime": "on" });
+    const m = { name: "Bedtime", run: ["scene.night", "script.bedtime"] };
+    expect(switchOff(hass, m, config)).toEqual([
+      { domain: "script", service: "turn_off", data: { entity_id: "script.bedtime" } },
       { domain: "light", service: "turn_off", data: { entity_id: ["light.lr"] } },
     ]);
   });
@@ -108,6 +110,22 @@ describe("returnToDefault", () => {
       "automation.trigger",
       "button.press",
     ]);
+  });
+});
+
+describe("lightsFor", () => {
+  it("uses a scene's members, then its Hue room, then the area", () => {
+    const hass = fakeHass({
+      "scene.a": ["2026-11-16T19:00:00Z", { entity_id: ["light.x", "switch.y"] }],
+      "scene.kitchen_read": ["2026-11-16T19:00:00Z", { group_name: "Kitchen" }],
+      "light.kitchen": ["off", { is_hue_group: true, friendly_name: "Kitchen" }],
+      "scene.b": "unknown",
+      "light.k": "off",
+    });
+    hass.entities = { "light.k": { entity_id: "light.k", area_id: "hall" } as any };
+    expect(lightsFor(hass, "scene.a")).toEqual(["light.x"]);
+    expect(lightsFor(hass, "scene.kitchen_read")).toEqual(["light.kitchen"]);
+    expect(lightsFor(hass, "scene.b", "hall")).toEqual(["light.k"]);
   });
 });
 
@@ -132,7 +150,7 @@ describe("moments-area-moments card", () => {
   };
   const chips = (card: any) => [...card.shadowRoot.querySelectorAll("button.chip")] as HTMLButtonElement[];
 
-  it("shows the default first, marks the active moment, and returns to default on tap", async () => {
+  it("shows the default first, marks the active moment, and turns it off on tap", async () => {
     const t = Date.now();
     const iso = (ms: number) => new Date(t - ms).toISOString();
     const hass = fakeHass({ "scene.movie": iso(10 * min), "scene.natural": iso(40 * min) });
@@ -142,10 +160,16 @@ describe("moments-area-moments card", () => {
     expect(chips(card).map((b) => b.getAttribute("aria-pressed"))).toEqual(["false", "true", "false"]);
     chips(card)[1].click();
     await new Promise((r) => setTimeout(r));
-    expect(hass.calls).toEqual([["scene", "turn_on", { entity_id: "scene.natural" }]]);
+    expect(hass.calls).toEqual([["light", "turn_off", { entity_id: ["light.lr"] }]]);
     chips(card)[2].click();
     await new Promise((r) => setTimeout(r));
     expect(hass.calls[1]).toEqual(["scene", "turn_on", { entity_id: "scene.relax" }]);
+    card.remove();
+  });
+
+  it("shows nothing in an area with only a default", async () => {
+    const card = await mount({ default: "scene.natural" }, setup({}));
+    expect(chips(card)).toHaveLength(0);
     card.remove();
   });
 

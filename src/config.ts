@@ -4,30 +4,8 @@
 import type { TimeOfDay } from "./context/time-of-day";
 import type { Daylight } from "./context/daylight";
 
-/** A context tag an intent can be promoted by: a time of day or a daylight level. */
+/** A context tag: a time of day or a daylight level. */
 export type ContextTag = TimeOfDay | Daylight;
-
-export interface Intent {
-  /** scene, script, automation or button. */
-  entity: string;
-  name?: string;
-  /** Second line under the name, e.g. "Dim + music". */
-  label?: string;
-  icon?: string;
-  /** Contexts in which this intent moves to the front. */
-  when?: ContextTag[];
-  /** Area-level intent for one area. Without area/areas, the intent is house-level. */
-  area?: string;
-  /** Area-level intent shared by several areas. Scripts receive `area_id`. */
-  areas?: string[];
-  /**
-   * Entity that marks this intent active: "on", or for a select / input_select (such as
-   * Hue's active scene) the option that names this scene. A scene's lights must still be on.
-   */
-  active_entity?: string;
-  /** Lights this scene sets. Decides its active state, and tapping an active scene turns them off. */
-  lights?: string[];
-}
 
 export interface Schedule {
   name: string;
