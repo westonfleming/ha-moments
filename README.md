@@ -128,7 +128,49 @@ The cards look right in any theme. To give the whole dashboard, stock cards incl
 
 ### Tiles: icons, surfaces and backdrops
 
-`moments-tile` draws one of 16 animated icon sets (light, lock, door, blind, thermostat, plug, fan, coffee, washer, dishwasher, dryer, fridge, freezer, light sensor, motion, temperature), picked from the entity or set with `icon_set`. Each icon shows the entity's state, and it only moves while the device is active. Motion stops when Reduce Motion is on. Blinds have an icon for every 10% step: a position rounds up to the next step, and the shade glides between steps.
+`moments-tile` draws one of 44 animated icon sets, each in Glow and Crisp. The set is picked from the entity's domain and device class, or named with `icon_set`. Each icon shows the entity's state, and it only moves while the device is active. Motion stops when Reduce Motion is on. Blinds have an icon for every 10% step: a position rounds up to the next step, and the shade glides between steps.
+
+| Home Assistant type | `icon_set` | States |
+| --- | --- | --- |
+| `light` | `light` | on, dim, off |
+| `switch`; binary_sensor `plug`, `power` | `plug` | on, off |
+| `fan` | `fan` | on, off |
+| `lock`; binary_sensor `lock` | `lock` | locked, unlocked, jammed |
+| `climate` | `thermostat` | heat, cool, idle, off |
+| `cover` door; binary_sensor `door`, `opening` | `door` | closed, open |
+| `cover` window; binary_sensor `window` | `window` | closed, open |
+| `cover` garage; binary_sensor `garage_door` | `garage` | closed, open, opening, closing |
+| `cover` gate | `gate` | closed, open, opening, closing |
+| `cover` curtain | `curtain` | closed, partial, open, opening, closing |
+| other `cover` (blind, shade, shutter, awning, damper) | `blind` | 0–100 in 10% steps, opening, closing |
+| `media_player` tv | `tv` | playing, paused, on, off |
+| other `media_player` (speaker, receiver) | `speaker` | playing, paused, on, off |
+| `vacuum` | `vacuum` | cleaning, returning, docked, paused, idle, error |
+| `lawn_mower` | `mower` | mowing, returning, docked, paused, error |
+| `humidifier` | `humidifier` | humidifying, drying, idle, off |
+| `water_heater` | `water_heater` | heating, eco, off |
+| `valve` | `valve` | open, closed, opening, closing |
+| `alarm_control_panel` | `alarm` | disarmed, armed_home, armed_away, armed_night, arming, pending, triggered |
+| `camera` | `camera` | recording, streaming, idle, off |
+| `siren` | `siren` | on, off |
+| `person`, `device_tracker` | `person` | home, away |
+| `update`; binary_sensor `update` | `update` | available, installing, up_to_date |
+| binary_sensor `motion`, `occupancy`, `presence` | `motion` | detected, clear |
+| binary_sensor `smoke` | `smoke` | detected, clear |
+| binary_sensor `carbon_monoxide` | `co` | detected, clear |
+| binary_sensor `gas` | `gas` | detected, clear |
+| binary_sensor `moisture` | `leak` | wet, dry |
+| binary_sensor `problem`, `safety`, `tamper` | `problem` | problem, ok |
+| binary_sensor `connectivity` | `connectivity` | connected, disconnected |
+| binary_sensor `running` | `running` | running, stopped |
+| binary_sensor `vibration`, `moving` | `vibration` | detected, clear |
+| binary_sensor `sound` | `sound` | detected, clear |
+| sensor and binary_sensor `battery`, `battery_charging` | `battery` | full, half, low, empty, charging |
+| sensor `temperature`; binary_sensor `cold`, `heat` | `temp` | hot, comfortable, cold |
+| sensor `illuminance`; binary_sensor `light` | `lux` | bright, dim, dark |
+| sensor `humidity` | `humidity` | humid, comfortable, dry |
+| sensor `carbon_dioxide`, `pm25`, `pm10`, `pm1`, `volatile_organic_compounds`, `aqi`, `nitrogen_dioxide`, `ozone` | `air` | good, fair, poor |
+| Appliances (name the set with `icon_set`, map their words with `states`) | `coffee`, `washer`, `dishwasher`, `dryer`, `fridge`, `freezer` | see the design sheet |
 
 Everything beyond `entity` is optional, and anything a device can't report is simply left out:
 
@@ -143,6 +185,10 @@ Everything beyond `entity` is optional, and anything a device can't report is si
 | `finish` | A timestamp entity shown beside the bar. |
 | `surface` | `solid`, `frosted` or `glass`. Theme default: `moments-tile-surface`. |
 | `opacity`, `blur` | How much card colour shows (0–1) and the blur in px. Theme defaults: `moments-tile-opacity`, `moments-tile-blur`. |
+| `dark_below`, `bright_above` | Light sensor thresholds in lx. Default 50 and 1000. |
+| `cold_below`, `hot_above` | Temperature thresholds. Default 15 and 26. |
+| `dry_below`, `humid_above` | Humidity thresholds in %. Default 30 and 60. |
+| `fair_above`, `poor_above` | Air quality thresholds. Default per device class (CO₂ 800 and 1200 ppm, PM2.5 12 and 35 µg/m³). |
 | `tap_action` | `more-info` (default), `toggle` or `none`. |
 
 ### Metrics and area headers

@@ -27,10 +27,50 @@ describe("inferIconSet", () => {
   it("picks a set from domain and device class", () => {
     expect(inferIconSet(ent("light.a", "on"))).toBe("light");
     expect(inferIconSet(ent("cover.a", "open", { device_class: "blind" }))).toBe("blind");
-    expect(inferIconSet(ent("cover.g", "open", { device_class: "garage" }))).toBe("door");
+    expect(inferIconSet(ent("cover.g", "open", { device_class: "garage" }))).toBe("garage");
+    expect(inferIconSet(ent("cover.d", "open", { device_class: "door" }))).toBe("door");
+    expect(inferIconSet(ent("cover.c", "open", { device_class: "curtain" }))).toBe("curtain");
+    expect(inferIconSet(ent("cover.s", "open", { device_class: "shutter" }))).toBe("blind");
     expect(inferIconSet(ent("binary_sensor.m", "on", { device_class: "occupancy" }))).toBe("motion");
     expect(inferIconSet(ent("sensor.t", "20", { device_class: "temperature" }))).toBe("temp");
     expect(inferIconSet(ent("sensor.x", "20"))).toBeUndefined();
+  });
+  it("covers the common HA domains and device classes", () => {
+    const cases: [string, Record<string, any>, string][] = [
+      ["media_player.tv", { device_class: "tv" }, "tv"],
+      ["media_player.kitchen", {}, "speaker"],
+      ["vacuum.robot", {}, "vacuum"],
+      ["lawn_mower.robot", {}, "mower"],
+      ["humidifier.bedroom", {}, "humidifier"],
+      ["water_heater.tank", {}, "water_heater"],
+      ["valve.main", { device_class: "water" }, "valve"],
+      ["alarm_control_panel.home", {}, "alarm"],
+      ["camera.porch", {}, "camera"],
+      ["siren.hall", {}, "siren"],
+      ["person.sam", {}, "person"],
+      ["device_tracker.phone", {}, "person"],
+      ["update.core", {}, "update"],
+      ["binary_sensor.w", { device_class: "window" }, "window"],
+      ["binary_sensor.g", { device_class: "garage_door" }, "garage"],
+      ["binary_sensor.s", { device_class: "smoke" }, "smoke"],
+      ["binary_sensor.c", { device_class: "carbon_monoxide" }, "co"],
+      ["binary_sensor.gas", { device_class: "gas" }, "gas"],
+      ["binary_sensor.l", { device_class: "moisture" }, "leak"],
+      ["binary_sensor.p", { device_class: "tamper" }, "problem"],
+      ["binary_sensor.n", { device_class: "connectivity" }, "connectivity"],
+      ["binary_sensor.b", { device_class: "battery" }, "battery"],
+      ["binary_sensor.r", { device_class: "running" }, "running"],
+      ["binary_sensor.v", { device_class: "moving" }, "vibration"],
+      ["binary_sensor.so", { device_class: "sound" }, "sound"],
+      ["binary_sensor.lk", { device_class: "lock" }, "lock"],
+      ["binary_sensor.pw", { device_class: "power" }, "plug"],
+      ["binary_sensor.cold", { device_class: "cold" }, "temp"],
+      ["sensor.h", { device_class: "humidity" }, "humidity"],
+      ["sensor.bat", { device_class: "battery" }, "battery"],
+      ["sensor.co2", { device_class: "carbon_dioxide" }, "air"],
+      ["sensor.pm", { device_class: "pm25" }, "air"],
+    ];
+    for (const [id, attrs, set] of cases) expect(inferIconSet(ent(id, "on", attrs)), id).toBe(set);
   });
 });
 
@@ -66,6 +106,29 @@ describe("resolveIconState", () => {
     expect(resolveIconState("lux", ent("sensor.l", "300"), { bright_above: 200 })).toBe("bright");
     expect(resolveIconState("temp", ent("sensor.t", "3"))).toBe("cold");
     expect(resolveIconState("temp", ent("sensor.t", "21"))).toBe("comfortable");
+  });
+  it("maps the new sets' HA states", () => {
+    expect(resolveIconState("tv", ent("media_player.tv", "buffering"))).toBe("playing");
+    expect(resolveIconState("speaker", ent("media_player.s", "standby"))).toBe("off");
+    expect(resolveIconState("vacuum", ent("vacuum.v", "returning"))).toBe("returning");
+    expect(resolveIconState("mower", ent("lawn_mower.m", "docked"))).toBe("docked");
+    expect(resolveIconState("garage", ent("cover.g", "opening"))).toBe("opening");
+    expect(resolveIconState("curtain", ent("cover.c", "open", { current_position: 40 }))).toBe("partial");
+    expect(resolveIconState("alarm", ent("alarm_control_panel.a", "armed_vacation"))).toBe("armed_away");
+    expect(resolveIconState("alarm", ent("alarm_control_panel.a", "triggered"))).toBe("triggered");
+    expect(resolveIconState("humidifier", ent("humidifier.h", "on", { action: "drying" }))).toBe("drying");
+    expect(resolveIconState("water_heater", ent("water_heater.w", "heat_pump"))).toBe("eco");
+    expect(resolveIconState("person", ent("person.p", "Work"))).toBe("away");
+    expect(resolveIconState("battery", ent("sensor.b", "18", { device_class: "battery" }))).toBe("low");
+    expect(resolveIconState("battery", ent("binary_sensor.c", "on", { device_class: "battery_charging" }))).toBe("charging");
+    expect(resolveIconState("update", ent("update.u", "on", { in_progress: 40 }))).toBe("installing");
+    expect(resolveIconState("lock", ent("binary_sensor.l", "on", { device_class: "lock" }))).toBe("unlocked");
+    expect(resolveIconState("temp", ent("binary_sensor.c", "on", { device_class: "cold" }))).toBe("cold");
+    expect(resolveIconState("humidity", ent("sensor.h", "72"))).toBe("humid");
+    expect(resolveIconState("humidity", ent("sensor.h", "50"), { humid_above: 45 })).toBe("humid");
+    expect(resolveIconState("air", ent("sensor.c", "1300", { device_class: "carbon_dioxide" }))).toBe("poor");
+    expect(resolveIconState("air", ent("sensor.c", "900", { device_class: "carbon_dioxide" }))).toBe("fair");
+    expect(resolveIconState("air", ent("sensor.c", "40", { device_class: "pm25" }), { poor_above: 50 })).toBe("fair");
   });
   it("falls back to a resting state when the entity is missing", () => {
     expect(resolveIconState("plug", undefined)).toBe("off");
