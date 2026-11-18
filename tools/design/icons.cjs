@@ -39,6 +39,8 @@ const CSS = `.hm-breathe{animation:hm-breathe 3.2s ease-in-out infinite}
 @keyframes hm-spray{0%{transform:translateY(0);opacity:0}25%{opacity:1}100%{transform:translateY(9px);opacity:0}}
 .hm-bubble{animation:hm-bubble 2s ease-out infinite}
 @keyframes hm-bubble{0%{transform:translateY(0);opacity:0}30%{opacity:1}100%{transform:translateY(-8px);opacity:0}}
+.hm-part{animation:hm-part 3s ease-in-out infinite}
+@keyframes hm-part{0%,12%{transform:scaleX(1)}82%,100%{transform:scaleX(.22)}}
 @media (prefers-reduced-motion:reduce){[class*="hm-"]{animation:none!important}}`;
 
 function painter(mode, pfx) {
@@ -478,6 +480,595 @@ function dishwasher(s, P) {
   return r;
 }
 
+// ======================================================================
+// Home Assistant coverage (Nov 2026): a set for every common domain and
+// device class that had none. Same grammar as above: a light, slightly
+// dimensional object; colour and a halo only while active; motion only
+// while something is happening; badges bottom-right for status.
+// ======================================================================
+
+const SHADOW = '#AEB7C3';
+const shadowed = (x, y, w, h, rx, fill) =>
+  `<rect x="${x}" y="${y + 2.5}" width="${w}" height="${h}" rx="${rx}" fill="${SHADOW}"/><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${rx}" fill="${fill}" stroke="${LINE}"/>`;
+const badge = (cx, cy, c, inner) => `<circle cx="${cx}" cy="${cy}" r="7.5" fill="${c}" stroke="#fff" stroke-width="2"/>${inner}`;
+const boltBadge = (P, cx, cy) => {
+  const f = P.lg('boltb', [[0, '#FFE77F'], [1, '#FFAE1A']], '#FFC233');
+  return `<circle cx="${cx}" cy="${cy}" r="7.5" fill="${f}" stroke="#fff" stroke-width="2"/><path d="M${cx + .9} ${cy - 4.7} ${cx - 3.4} ${cy + 1}h3.4l-.9 3.7 4.3-5.7H${cx}Z" fill="#7A4A00"/>`;
+};
+const pauseBadge = (cx, cy) => badge(cx, cy, '#F59E0B', `<g fill="#fff"><rect x="${cx - 3}" y="${cy - 3.4}" width="2.2" height="6.8" rx="1"/><rect x="${cx + .8}" y="${cy - 3.4}" width="2.2" height="6.8" rx="1"/></g>`);
+const homeBadge = (cx, cy, c = '#3A8DFF') => badge(cx, cy, c, `<path d="M${cx - 3.6} ${cy + .2} ${cx} ${cy - 3.4} ${cx + 3.6} ${cy + .2}M${cx - 2.4} ${cy - .6}v4h4.8v-4" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>`);
+const slashBadge = (cx, cy) => badge(cx, cy, '#EF4438', `<path d="M${cx - 3} ${cy - 3} ${cx + 3} ${cy + 3}M${cx + 3} ${cy - 3} ${cx - 3} ${cy + 3}" stroke="#fff" stroke-width="2" stroke-linecap="round"/>`);
+const ledDot = (cx, cy, c, cls = '') => `<circle cx="${cx}" cy="${cy}" r="1.8" fill="${c}"${cls ? ` class="${cls}"` : ''}/>`;
+const skyPane = (P, x, y, w, h) => {
+  const sky = P.lg('sky', [[0, '#8FD8FF'], [1, '#3A98E8']], '#56AEF0');
+  return `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="2" fill="${sky}"/>` + P.halo('sun', '#FFE27A', x + w - 10, y + 10, 10, .85, '') + `<circle cx="${x + w - 10}" cy="${y + 10}" r="4.4" fill="#FFD447"/>` +
+    `<g fill="#fff" opacity=".95"><circle cx="${x + 7}" cy="${y + h - 9}" r="3"/><circle cx="${x + 11.5}" cy="${y + h - 11.5}" r="3.9"/><circle cx="${x + 15.5}" cy="${y + h - 8.6}" r="2.6"/><rect x="${x + 7}" y="${y + h - 9}" width="8.5" height="3"/></g>`;
+};
+
+// ---------- Window ----------
+function windowIcon(s, P) {
+  const open = s === 'open';
+  const frame = P.lg('frame', [[0, '#F6F8FA'], [1, '#C5CCD6']], '#D9DEE5');
+  let r = '';
+  if (open) r += P.halo('halo', '#FFC24D', 32, 32, 31, .35);
+  r += `<rect x="10" y="7" width="44" height="47" rx="4" fill="${frame}" stroke="${LINE}"/>`;
+  r += skyPane(P, 14, 11, 36, 39);
+  r += `<rect x="31.25" y="11" width="1.5" height="39" fill="${frame}"/>`;
+  r += P.hi(`<path d="M17 31 23 21M17 38l11-17" stroke="#fff" stroke-width="1.6" stroke-linecap="round" opacity=".45"/>`);
+  if (!open) {
+    r += P.hi(`<path d="M35 47 41 37M35 42l7-10" stroke="#fff" stroke-width="1.6" stroke-linecap="round" opacity=".45"/>`);
+    r += `<rect x="34.5" y="28" width="2" height="7" rx="1" fill="${metalH(P)}"/>`;
+  } else {
+    // right sash swung out on its hinge
+    r += `<g class="hm-swing" ${o(50, 30)}><path d="M50 11 41 14.5v32L50 50Z" fill="${frame}" stroke="${LINE}"/><path d="M48.5 14 43 16.2v28.3l5.5 2.6Z" fill="#BFE6FF" opacity=".85"/><rect x="43.6" y="28" width="1.6" height="6" rx=".8" fill="#8D96A2"/></g>`;
+    r += `<g fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" class="hm-breathe" opacity=".9"><path d="M34 22c2-1.5 4 1.5 6 0"/><path d="M34.5 29c2-1.5 4 1.5 6 0"/><path d="M34 36c2-1.5 4 1.5 6 0"/></g>`;
+  }
+  r += `<rect x="7" y="53" width="50" height="5" rx="2" fill="${P.lg('sill', [[0, '#E9EDF1'], [1, '#B4BCC7']], '#C9D0D9')}" stroke="${LINE}"/>`;
+  return r;
+}
+
+// ---------- Garage door ----------
+function garage(s, P) {
+  const anim = s === 'opening' || s === 'closing';
+  const open = s === 'open';
+  const wall = P.lg('wall', [[0, '#F6F8FA'], [1, '#C5CCD6']], '#D9DEE5');
+  const panel = P.lg('panel', [[0, '#E7ECF2'], [1, '#AEB8C5']], '#C6CED8');
+  let r = '';
+  if (open || anim) r += P.halo('halo', '#FFC24D', 32, 44, 28, .4);
+  r += `<path d="M7 25 32 8l25 17v32H7Z" fill="${wall}" stroke="${LINE}" stroke-linejoin="round"/>`;
+  r += P.hi(`<path d="M10 24.5 32 10l22 14.5" fill="none" stroke="#fff" stroke-width="1.6" opacity=".7"/>`);
+  const inside = open || anim ? P.lg('inside', [[0, '#FFE8B0'], [1, '#F2A43A']], '#FFC95A') : '#3A414D';
+  r += `<rect x="13" y="27" width="38" height="30" fill="${inside}"/>`;
+  if (open || anim) {
+    // car, seen from the front
+    r += `<path d="M20 50v-6.5l3.4-6.5h17.2l3.4 6.5V50Z" fill="#3F66E0"/><path d="M24.6 38.4h14.8l2.4 4.6H22.2Z" fill="#BFE6FF"/><g fill="#FFF3C4"><circle cx="24" cy="46.5" r="1.8"/><circle cx="40" cy="46.5" r="1.8"/></g><g fill="#1D232E"><rect x="20" y="50" width="5" height="4" rx="1.2"/><rect x="39" y="50" width="5" height="4" rx="1.2"/></g>`;
+  }
+  const slats = Array.from({ length: 5 }, (_, i) => `<path d="M13 ${33 + i * 6}h38"/>`).join('');
+  const door = `<rect x="13" y="27" width="38" height="30" fill="${panel}"/><g stroke="#6F7B8C" stroke-opacity=".35" stroke-width="1.2">${slats}</g><rect x="29" y="52" width="6" height="1.8" rx=".9" fill="#6F7B8C"/>`;
+  const dir = s === 'closing' ? 'animation-direction:reverse;' : '';
+  if (anim) r += `<g class="hm-roll" style="${dir}transform-origin:32px 27px">${door}</g>`;
+  else if (open) r += `<g style="transform:scaleY(.12);transform-origin:32px 27px">${door}</g>`;
+  else r += door;
+  r += `<rect x="12" y="25.5" width="40" height="3" rx="1.5" fill="#6F7B8C"/>`;
+  return r;
+}
+
+// ---------- Gate ----------
+function gate(s, P) {
+  const anim = s === 'opening' || s === 'closing';
+  const open = s === 'open';
+  const post = P.lg('post', [[0, '#8D96A2'], [1, '#596270']], '#6F7884', 0, 0, 1, 0);
+  const bar = open || anim ? '#F2A33A' : '#4A515D';
+  const leaf = (x0, w, flip) => {
+    const bars = Array.from({ length: 4 }, (_, i) => `<rect x="${(x0 + 2 + i * (w - 4) / 3.4).toFixed(1)}" y="${flip ? 22 : 22}" width="2" height="30" rx="1"/>`).join('');
+    return `<g fill="${bar}">${bars}<rect x="${x0}" y="24" width="${w}" height="2.4" rx="1.2"/><rect x="${x0}" y="45" width="${w}" height="2.4" rx="1.2"/></g>`;
+  };
+  let r = '';
+  if (open || anim) r += P.halo('halo', '#FFC24D', 32, 40, 28, .35);
+  r += `<path d="M4 54h56" stroke="#8D96A2" stroke-width="2" stroke-linecap="round"/>`;
+  r += P.hi(`<ellipse cx="32" cy="55" rx="22" ry="2" fill="#000" opacity=".08"/>`);
+  const dir = s === 'closing' ? 'animation-direction:reverse;' : '';
+  const L = leaf(11.5, 20, false), R = leaf(32.5, 20, true);
+  if (anim) r += `<g class="hm-part" style="${dir}transform-origin:11.5px 0">${L}</g><g class="hm-part" style="${dir}transform-origin:52.5px 0">${R}</g>`;
+  else if (open) r += `<g style="transform:scaleX(.22);transform-origin:11.5px 0">${L}</g><g style="transform:scaleX(.22);transform-origin:52.5px 0">${R}</g>`;
+  else r += L + R + `<rect x="30.6" y="33" width="2.8" height="5" rx="1" fill="#F5B524"/>`;
+  r += `<rect x="6" y="17" width="5.5" height="38" rx="1.6" fill="${post}"/><rect x="52.5" y="17" width="5.5" height="38" rx="1.6" fill="${post}"/>`;
+  r += `<g fill="#AEB7C3"><rect x="5" y="15" width="7.5" height="3" rx="1.5"/><rect x="51.5" y="15" width="7.5" height="3" rx="1.5"/></g>`;
+  return r;
+}
+
+// ---------- Curtains ----------
+function curtain(s, P) {
+  const anim = s === 'opening' || s === 'closing';
+  const k = { closed: 1, partial: .55, open: .22 }[s] ?? 1;
+  const fabric = P.lg('fabric', [[0, '#C9B8F2'], [1, '#8D77D8']], '#A592E4', 0, 0, 1, 0);
+  const frame = P.lg('frame', [[0, '#F6F8FA'], [1, '#C5CCD6']], '#D9DEE5');
+  let r = '';
+  if (s !== 'closed') r += P.halo('halo', '#FFE27A', 32, 30, 28, .3, '');
+  r += `<rect x="12" y="11" width="40" height="44" rx="3" fill="${frame}" stroke="${LINE}"/>`;
+  r += skyPane(P, 15, 14, 34, 38);
+  const panel = (x, w) => {
+    const pleats = Array.from({ length: 4 }, (_, i) => `<path d="M${(x + (i + .8) * w / 4.6).toFixed(1)} 12v45"/>`).join('');
+    return `<path d="M${x} 10h${w}v46c-${(w / 2).toFixed(1)} 2-${w} 0-${w} 0Z" fill="${fabric}"/><g stroke="#3F2E86" stroke-opacity=".18" stroke-width="1.4">${pleats}</g>`;
+  };
+  const dir = s === 'closing' ? 'animation-direction:reverse;' : '';
+  const L = panel(9, 23), R = panel(32, 23);
+  if (anim) r += `<g class="hm-part" style="${dir}transform-origin:9px 0">${L}</g><g class="hm-part" style="${dir}transform-origin:55px 0">${R}</g>`;
+  else r += `<g style="transform:scaleX(${k});transform-origin:9px 0">${L}</g><g style="transform:scaleX(${k});transform-origin:55px 0">${R}</g>`;
+  r += `<rect x="6" y="7" width="52" height="4" rx="2" fill="${P.lg('rod', [[0, '#707A89'], [1, '#434B57']], '#525B68')}"/><g fill="#434B57"><circle cx="6.5" cy="9" r="2.6"/><circle cx="57.5" cy="9" r="2.6"/></g>`;
+  return r;
+}
+
+// ---------- TV ----------
+function tv(s, P) {
+  const on = s !== 'off';
+  const bezel = P.lg('bezel', [[0, '#3A4252'], [1, '#161A21']], '#262C36');
+  const screen = s === 'playing' ? P.lg('screen', [[0, '#7C5CFF'], [.55, '#3A8DFF'], [1, '#22C1C3']], '#5B74F5', 0, 0, 1, 1)
+    : s === 'paused' ? P.lg('screen', [[0, '#5C5096'], [1, '#2C4A82']], '#45508C', 0, 0, 1, 1)
+    : s === 'on' ? P.lg('screen', [[0, '#2B3A66'], [1, '#18213C']], '#232F52', 0, 0, 1, 1)
+    : P.lg('screen', [[0, '#1F242D'], [1, '#0C0F14']], '#151920', 0, 0, 1, 1);
+  let r = '';
+  if (s === 'playing') r += P.halo('halo', '#6E7BFF', 32, 28, 32, .5);
+  r += `<path d="M26 47h12l3 8H23Z" fill="${P.lg('stand', [[0, '#8D96A2'], [1, '#596270']], '#6F7884')}"/><rect x="18" y="54" width="28" height="3" rx="1.5" fill="#596270"/>`;
+  r += `<rect x="6" y="10" width="52" height="37" rx="5" fill="${bezel}"/>`;
+  r += `<rect x="9" y="13" width="46" height="31" rx="2.5" fill="${screen}"/>`;
+  if (s === 'playing') {
+    r += `<g class="hm-breathe"><circle cx="20" cy="22" r="7" fill="#fff" opacity=".14"/><circle cx="46" cy="36" r="9" fill="#fff" opacity=".1"/></g>`;
+    r += `<path d="M28.5 21.5v13l11-6.5Z" fill="#fff"/>`;
+    r += `<rect x="13" y="39.5" width="38" height="1.6" rx=".8" fill="#fff" opacity=".35"/><rect x="13" y="39.5" width="22" height="1.6" rx=".8" fill="#fff"/>`;
+  } else if (s === 'paused') {
+    r += `<g fill="#fff" opacity=".95"><rect x="26.5" y="21" width="4" height="13" rx="1.6"/><rect x="33.5" y="21" width="4" height="13" rx="1.6"/></g>`;
+    r += `<rect x="13" y="39.5" width="38" height="1.6" rx=".8" fill="#fff" opacity=".3"/><rect x="13" y="39.5" width="22" height="1.6" rx=".8" fill="#fff" opacity=".7"/>`;
+  } else if (s === 'on') {
+    r += `<g fill="#fff" opacity=".55"><rect x="15" y="31" width="9" height="7" rx="1.5"/><rect x="27.5" y="31" width="9" height="7" rx="1.5"/><rect x="40" y="31" width="9" height="7" rx="1.5"/></g><rect x="15" y="19" width="18" height="3" rx="1.5" fill="#fff" opacity=".7"/>`;
+  }
+  r += P.hi(`<path d="M11 15h16l-9 27h-7Z" fill="#fff" opacity="${on ? .06 : .09}"/>`);
+  r += ledDot(32, 45.6, on ? '#22D877' : '#E5484D');
+  return r;
+}
+
+// ---------- Speaker ----------
+function speaker(s, P) {
+  const play = s === 'playing';
+  const body = P.lg('body', [[0, '#4A5364'], [1, '#1E232C']], '#323A47');
+  const cone = P.rg('cone', [[0, '#5A6475'], [.7, '#262C36'], [1, '#14181E']], '#2A313C', .45, .4, .6);
+  let r = '';
+  if (play) {
+    r += P.halo('halo', '#B07CFF', 32, 36, 31, .4);
+    for (const d of [0, -1.2]) r += `<g class="hm-ping" style="transform-origin:32px 38px;animation-delay:${d}s" fill="none" stroke="#9B6BFF" stroke-width="2" stroke-linecap="round"><path d="M10 26a26 26 0 0 0 0 24"/><path d="M54 26a26 26 0 0 1 0 24"/></g>`;
+  }
+  r += `<rect x="17" y="8.5" width="30" height="50" rx="8" fill="${SHADOW}"/>`;
+  r += `<rect x="17" y="6" width="30" height="50" rx="8" fill="${body}"/>`;
+  r += P.hi(`<rect x="20" y="8" width="24" height="3" rx="1.5" fill="#fff" opacity=".12"/>`);
+  r += `<circle cx="32" cy="17.5" r="4" fill="${cone}" stroke="#596270" stroke-width="1"/>`;
+  r += `<g${play ? ` class="hm-rays" ${o(32, 38)}` : ''}><circle cx="32" cy="38" r="11" fill="${cone}" stroke="#596270" stroke-width="1.2"/><circle cx="32" cy="38" r="3.6" fill="${play ? '#9B6BFF' : '#596270'}"/></g>`;
+  const led = play ? '#B07CFF' : s === 'paused' ? '#F59E0B' : s === 'on' ? '#22D877' : '#596270';
+  r += `<rect x="26" y="51" width="12" height="2" rx="1" fill="${led}"/>`;
+  if (s === 'paused') r += pauseBadge(47, 49);
+  return r;
+}
+
+// ---------- Robot vacuum (top view) ----------
+function vacuum(s, P) {
+  const run = s === 'cleaning', home = s === 'returning';
+  const shell = P.rg('shell', [[0, '#FFFFFF'], [.75, '#E3E8EE'], [1, '#B9C2CD']], '#EEF1F5', .4, .35, .75);
+  let r = '';
+  if (run) {
+    r += P.halo('halo', '#2CD3C0', 32, 32, 31, .4);
+    r += `<path d="M6 52c8-2 6-10 14-12" fill="none" stroke="#20B2AC" stroke-width="2" stroke-linecap="round" stroke-dasharray="2 3.2" class="hm-flow" opacity=".7"/>`;
+  }
+  if (s === 'docked') r += `<path d="M14 6h36v8a4 4 0 0 1-4 4H18a4 4 0 0 1-4-4Z" fill="#596270"/><rect x="28" y="14" width="8" height="3" rx="1" fill="#22D877"/>`;
+  r += `<g${s === 'error' ? ' class="hm-shake"' : ''}>`;
+  r += `<circle cx="32" cy="36.5" r="21" fill="${SHADOW}"/>`;
+  r += `<circle cx="32" cy="34" r="21" fill="${shell}" stroke="${LINE}"/>`;
+  r += `<path d="M14.5 25a21 21 0 0 1 35 0" fill="none" stroke="#596270" stroke-width="3" stroke-linecap="round" opacity=".55"/>`;
+  r += `<circle cx="32" cy="27" r="5.5" fill="${P.lg('lidar', [[0, '#4A5364'], [1, '#1E232C']], '#323A47')}"/>`;
+  r += P.hi(`<ellipse cx="30.5" cy="25.5" rx="2" ry="1.1" fill="#fff" opacity=".35"/>`);
+  r += `<rect x="24" y="38" width="16" height="3" rx="1.5" fill="#C9D0D9"/>`;
+  r += `<circle cx="32" cy="46" r="1.8" fill="${run ? '#20B2AC' : home ? '#3A8DFF' : s === 'docked' ? '#22D877' : s === 'error' ? '#EF4438' : '#A3ACB8'}"/>`;
+  // side brush
+  const brush = `<g stroke="#8D96A2" stroke-width="1.3" stroke-linecap="round"><path d="M17 44l-5-1M17 44l1.5-5M17 44l3.5 3.6"/></g><circle cx="17" cy="44" r="1.6" fill="#596270"/>`;
+  r += run ? `<g class="hm-spin" ${o(17, 44)}>${brush}</g>` : brush;
+  r += `</g>`;
+  if (home) r += homeBadge(48, 50);
+  if (s === 'docked') r += boltBadge(P, 48, 50);
+  if (s === 'paused') r += pauseBadge(48, 50);
+  if (s === 'error') r += alertBadge(48, 50);
+  return r;
+}
+
+// ---------- Robot lawn mower (side view) ----------
+function mower(s, P) {
+  const run = s === 'mowing';
+  const shell = run ? P.lg('shell', [[0, '#8BEAB4'], [1, '#1E9C5A']], '#2FBF77') : P.lg('shell', [[0, '#E9EDF1'], [1, '#AEB7C3']], '#C9D0D9');
+  let r = '';
+  if (run) r += P.halo('halo', '#2EDB86', 32, 38, 30, .35);
+  if (s === 'docked') r += `<path d="M44 52V28h9a3 3 0 0 1 3 3v21Z" fill="#596270"/><rect x="45" y="31" width="7" height="2.4" rx="1.2" fill="#22D877"/>`;
+  r += `<g${s === 'error' ? ' class="hm-shake"' : ''}>`;
+  r += `<path d="M9 44c0-7 7-15 19-15h6c9 0 15 6 17 15Z" fill="${shell}" stroke="${LINE}"/>`;
+  r += P.hi(`<path d="M15 39c2-4.5 7-7.6 13-7.6" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".55"/>`);
+  r += `<rect x="30" y="31" width="9" height="4" rx="2" fill="#1D232E"/><circle cx="36.5" cy="33" r="1" fill="${run ? '#22D877' : s === 'error' ? '#EF4438' : s === 'returning' ? '#3A8DFF' : '#8D96A2'}"/>`;
+  r += `<rect x="9" y="43" width="42" height="4" rx="2" fill="#4A515D"/>`;
+  const wheel = (cx, rr) => {
+    const w = `<circle cx="${cx}" cy="48" r="${rr}" fill="#2A313C"/><circle cx="${cx}" cy="48" r="${rr * .45}" fill="#8D96A2"/><path d="M${cx - rr * .45} 48h${rr * .9}" stroke="#2A313C" stroke-width="1"/>`;
+    return run || s === 'returning' ? `<g class="hm-spin" ${o(cx, 48)}>${w}</g>` : w;
+  };
+  r += wheel(17, 6) + wheel(43, 4.5);
+  r += `</g>`;
+  r += `<path d="M4 55h56" stroke="#2FBF77" stroke-width="2" stroke-linecap="round"/>`;
+  r += `<g stroke="#2FBF77" stroke-width="1.6" stroke-linecap="round"><path d="M6 55l-1-4M8 55l1.5-4.5M54 55l-1-4M57 55l1.5-4"/></g>`;
+  if (run) for (const [x, d] of [[26, 0], [30, -.3], [34, -.6]]) r += `<path class="hm-bubble" style="animation-delay:${d}s" d="M${x} 52l1-2.4" stroke="#7FE0A6" stroke-width="1.4" stroke-linecap="round"/>`;
+  if (s === 'returning') r += homeBadge(50, 14);
+  if (s === 'docked') r += boltBadge(P, 50, 14);
+  if (s === 'paused') r += pauseBadge(50, 14);
+  if (s === 'error') r += alertBadge(50, 14);
+  return r;
+}
+
+// ---------- Humidifier / dehumidifier ----------
+function humidifier(s, P) {
+  const hum = s === 'humidifying', dry = s === 'drying', on = s !== 'off';
+  const water = P.lg('water', [[0, '#9EDCFF'], [1, '#2D8FE0']], '#56AEF0');
+  let r = '';
+  if (hum) r += P.halo('halo', '#5CC4FF', 32, 26, 30, .45);
+  if (dry) r += P.halo('halo', '#FFB25B', 32, 40, 30, .35);
+  r += shadowed(15, 12, 34, 45, 9, whiteBody(P));
+  r += `<ellipse cx="32" cy="13.5" rx="9" ry="2.6" fill="${on ? '#C9D0D9' : '#D6DCE4'}" stroke="${LINE}"/>`;
+  // tank window
+  r += `<rect x="20" y="28" width="24" height="22" rx="4" fill="#E9F4FC" stroke="${LINE}"/>`;
+  r += `<rect x="20.5" y="${dry ? 41 : 35}" width="23" height="${dry ? 8.5 : 14.5}" rx="3.5" fill="${on ? water : '#C9D0D9'}"/>`;
+  r += P.hi(`<path d="M23 31v15" stroke="#fff" stroke-width="1.6" stroke-linecap="round" opacity=".7"/>`);
+  r += `<circle cx="32" cy="21" r="2.6" fill="${hum ? '#2D8FE0' : dry ? '#F08A2E' : s === 'idle' ? '#22D877' : '#A3ACB8'}"/>`;
+  if (hum) r += `<g fill="none" stroke="#7CC8F5" stroke-width="2" stroke-linecap="round"><path class="hm-steam" d="M27 9c-2-2 2-3.6 0-6"/><path class="hm-steam" style="animation-delay:-.6s" d="M32 9c-2-2 2-3.6 0-6"/><path class="hm-steam" style="animation-delay:-1.2s" d="M37 9c-2-2 2-3.6 0-6"/></g>`;
+  if (dry) r += `<path class="hm-drip2" d="M32 25.5c-1.6 2.3-2.4 3.4-2.4 4.6a2.4 2.4 0 0 0 4.8 0c0-1.2-.8-2.3-2.4-4.6Z" fill="#2D8FE0"/>`;
+  return r;
+}
+
+// ---------- Water heater ----------
+function waterHeater(s, P) {
+  const heat = s === 'heating';
+  const tank = P.lg('tank', [[0, '#C9D0D9'], [.35, '#FFFFFF'], [1, '#B4BCC7']], '#E3E8EE', 0, 0, 1, 0);
+  let r = '';
+  if (heat) r += P.halo('halo', '#FF7A35', 32, 44, 30, .45);
+  r += `<rect x="17" y="8.5" width="30" height="45" rx="12" fill="${SHADOW}"/>`;
+  r += `<rect x="17" y="6" width="30" height="45" rx="12" fill="${tank}" stroke="${LINE}"/>`;
+  r += `<g fill="#8D96A2"><rect x="22" y="2" width="4" height="6" rx="1"/><rect x="38" y="2" width="4" height="6" rx="1"/></g>`;
+  r += `<path d="M24 3h0" stroke="#3A8DFF"/><rect x="22" y="2" width="4" height="2" rx="1" fill="#3A8DFF"/><rect x="38" y="2" width="4" height="2" rx="1" fill="#EF4438"/>`;
+  // gauge
+  r += `<circle cx="32" cy="22" r="7" fill="#1D232E"/><path d="M27.5 24.5a5 5 0 0 1 9 0" fill="none" stroke="#3A414D" stroke-width="1.6"/>`;
+  const needle = heat ? 'M32 22l3.6-3' : s === 'eco' ? 'M32 22l.2-4.6' : 'M32 22l-3.6-2.4';
+  r += `<path d="${needle}" stroke="${heat ? '#FF6237' : s === 'eco' ? '#2DBE76' : '#8D96A2'}" stroke-width="1.8" stroke-linecap="round"/><circle cx="32" cy="22" r="1.4" fill="#fff"/>`;
+  // burner window
+  r += `<rect x="25" y="38" width="14" height="8" rx="3" fill="#1D232E"/>`;
+  if (heat) {
+    const fl = P.lg('flame', [[0, '#FFD66E'], [.55, '#FF7A2E'], [1, '#EE3F2A']], '#FF6A2E');
+    r += `<g class="hm-flicker" ${o(32, 45)}><path d="M28 45.5c0-3 2-3.6 2-6 1.4 1 2 2.4 2 3.4.6-1 1.2-2 1-3.4 2 1.4 3 3.4 3 6Z" fill="${fl}"/></g>`;
+  } else if (s === 'eco') {
+    const lf = P.lg('leaf', [[0, '#A8F2C8'], [1, '#2DBE76']], '#3DCB85', 0, 1, 1, 0);
+    r += `<path d="M28 45c0-4 2.5-6 8-6 0 4.4-2.6 6-8 6Z" fill="${lf}"/>`;
+  }
+  r += `<rect x="19" y="51" width="26" height="4" rx="2" fill="#8D96A2"/>`;
+  return r;
+}
+
+// ---------- Valve ----------
+function valve(s, P) {
+  const anim = s === 'opening' || s === 'closing';
+  const open = s === 'open';
+  const pipe = P.lg('pipe', [[0, '#E3E8EE'], [.5, '#B4BCC7'], [1, '#7D8794']], '#A9B2BE');
+  const wheelC = open ? '#2D8FE0' : anim ? '#F59E0B' : '#EF4438';
+  let r = '';
+  if (open) r += P.halo('halo', '#3AB0FF', 32, 42, 30, .35);
+  r += `<rect x="4" y="36" width="56" height="13" rx="3" fill="${pipe}" stroke="${LINE}"/>`;
+  r += `<g fill="#8D96A2"><rect x="10" y="33" width="5" height="19" rx="1.5"/><rect x="49" y="33" width="5" height="19" rx="1.5"/></g>`;
+  if (open || anim) r += `<path d="M5 42.5h54" stroke="#3AA0FF" stroke-width="4" stroke-linecap="round" stroke-dasharray="6.4 5" class="hm-flow" opacity="${open ? .9 : .5}"/>`;
+  r += `<path d="M24 34h16l-2 -4h-12Z" fill="#7D8794"/><rect x="22" y="33" width="20" height="19" rx="4" fill="${P.lg('body', [[0, '#C9D0D9'], [1, '#7D8794']], '#9AA3AF')}" stroke="${LINE}"/>`;
+  r += `<rect x="30.5" y="16" width="3" height="15" fill="#596270"/>`;
+  const wheel = `<circle cx="32" cy="15.5" r="10" fill="none" stroke="${wheelC}" stroke-width="3.2"/><g stroke="${wheelC}" stroke-width="2.2" stroke-linecap="round"><path d="M22.5 15.5h19M32 6v19M25.3 8.8l13.4 13.4M38.7 8.8 25.3 22.2"/></g><circle cx="32" cy="15.5" r="3" fill="${wheelC}"/>`;
+  r += anim ? `<g class="hm-spin-slow" style="animation-duration:3s;${s === 'closing' ? 'animation-direction:reverse;' : ''}transform-origin:32px 15.5px">${wheel}</g>` : wheel;
+  r += P.hi(`<path d="M24 36v12" stroke="#fff" stroke-width="1.6" stroke-linecap="round" opacity=".55"/>`);
+  return r;
+}
+
+// ---------- Alarm panel ----------
+function alarm(s, P) {
+  const cfg = {
+    disarmed: [[[0, '#E9EDF1'], [1, '#AEB7C3']], '#C9D0D9', null],
+    armed_home: [[[0, '#7BEDB2'], [.55, '#22B46A'], [1, '#128a4e']], '#22B46A', '#2EDB86'],
+    armed_away: [[[0, '#9CC8FF'], [.55, '#3A8DFF'], [1, '#2357C9']], '#3A8DFF', '#3AA0FF'],
+    armed_night: [[[0, '#B4A6FF'], [.55, '#6D5BD6'], [1, '#43349E']], '#6D5BD6', '#8B7BFF'],
+    arming: [[[0, '#FFDC80'], [.55, '#F7A51C'], [1, '#D07A08']], '#F7A51C', '#FFB020'],
+    pending: [[[0, '#FFDC80'], [.55, '#F7A51C'], [1, '#D07A08']], '#F7A51C', '#FFB020'],
+    triggered: [[[0, '#FFA293'], [.55, '#EF4438'], [1, '#BF241A']], '#EF4438', '#FF4B3A'],
+  }[s];
+  const fill = P.lg('shield', cfg[0], cfg[1]);
+  const shield = 'M32 6 51 13v15c0 13-8 22-19 27-11-5-19-14-19-27V13Z';
+  let r = '';
+  if (cfg[2]) r += P.halo('halo', cfg[2], 32, 30, 31, s === 'triggered' ? .6 : .35, s === 'triggered' || s === 'pending' ? 'hm-breathe' : '');
+  r += `<g${s === 'triggered' ? ' class="hm-shake"' : ''}>`;
+  r += `<path d="${shield}" transform="translate(0 2.5)" fill="${s === 'disarmed' ? SHADOW : '#000'}" opacity="${s === 'disarmed' ? 1 : .12}"/>`;
+  r += `<path d="${shield}" fill="${fill}" stroke="${s === 'disarmed' ? LINE : 'none'}"/>`;
+  r += P.hi(`<path d="M17 15.5 32 10l15 5.5v4H17Z" fill="#fff" opacity=".28"/>`);
+  const w = `fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"`;
+  if (s === 'disarmed') r += `<g ${w.replace('#fff', '#6F7884')}><path d="M26 31v-3.5a6 6 0 0 1 11.6-2.2"/><rect x="24" y="31" width="16" height="11" rx="3"/></g>`;
+  if (s === 'armed_home') r += `<path d="M23 32 32 24l9 8M26 30v10h12V30" ${w}/>`;
+  if (s === 'armed_away') r += `<g ${w}><path d="M24 25h9v16h-9Z"/><path d="M36 33h7M40 29.5l3.5 3.5-3.5 3.5"/></g>`;
+  if (s === 'armed_night') r += `<path d="M36 23.5a9 9 0 1 0 6 13.5 7.5 7.5 0 0 1-6-13.5Z" fill="#fff"/>`;
+  if (s === 'arming') r += `<circle cx="32" cy="32" r="8" ${w} stroke-dasharray="4 3.2" class="hm-spin-slow" style="animation-duration:4s;transform-origin:32px 32px"/><circle cx="32" cy="32" r="2.4" fill="#fff"/>`;
+  if (s === 'pending') r += `<g ${w}><path d="M26 23h12M26 41h12M27.5 23c0 6 9 6 9 9s-9 3-9 9M36.5 23c0 6-9 6-9 9s9 3 9 9"/></g>`;
+  if (s === 'triggered') r += `<g fill="#fff"><path d="M32 21.5a6.5 6.5 0 0 0-6.5 6.5v5.5l-2.5 3.5h18l-2.5-3.5V28a6.5 6.5 0 0 0-6.5-6.5Z"/><circle cx="32" cy="40" r="2.4"/></g>`;
+  r += `</g>`;
+  return r;
+}
+
+// ---------- Security camera ----------
+function camera(s, P) {
+  const off = s === 'off';
+  const body = whiteBody(P);
+  const lens = s === 'streaming' ? P.rg('lens', [[0, '#C9F0FF'], [.5, '#3A8DFF'], [1, '#1A2C5A']], '#3A8DFF', .4, .4, .6)
+    : P.rg('lens', [[0, '#5A6475'], [.6, '#1E232C'], [1, '#0C0F14']], '#1E232C', .4, .4, .6);
+  let r = '';
+  if (s === 'recording') r += P.halo('halo', '#FF4B3A', 40, 30, 26, .35);
+  if (s === 'streaming') {
+    r += P.halo('halo', '#3AA0FF', 40, 30, 26, .35);
+    for (const d of [0, -1.5]) r += `<path class="hm-ping" style="transform-origin:51px 30px;animation-delay:${d}s" d="M55 22a11 11 0 0 1 0 16" fill="none" stroke="#3A8DFF" stroke-width="2" stroke-linecap="round"/>`;
+  }
+  r += `<rect x="4" y="24" width="7" height="24" rx="2" fill="#8D96A2"/><path d="M11 36h6l4-6" fill="none" stroke="#8D96A2" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>`;
+  r += `<g transform="rotate(12 34 28)"><rect x="17" y="21.5" width="32" height="17" rx="6" fill="${SHADOW}"/><rect x="17" y="19" width="32" height="17" rx="6" fill="${body}" stroke="${LINE}"/>`;
+  r += `<path d="M15 17h34a3 3 0 0 1 3 3v1H13v-1a3 3 0 0 1 2-3Z" fill="#596270"/>`;
+  r += `<circle cx="44" cy="27.5" r="6" fill="#2A313C"/><circle cx="44" cy="27.5" r="4.2" fill="${lens}"/>`;
+  r += P.hi(`<circle cx="42.6" cy="26" r="1.2" fill="#fff" opacity=".8"/>`);
+  r += `<circle cx="23" cy="27.5" r="1.8" fill="${s === 'recording' ? '#FF3B30' : s === 'streaming' ? '#3A8DFF' : s === 'idle' ? '#22D877' : '#A3ACB8'}"${s === 'recording' ? ' class="hm-twinkle"' : ''}/></g>`;
+  if (off) r += `<path d="M12 12 52 52" stroke="#EF4438" stroke-width="3" stroke-linecap="round"/>`;
+  return r;
+}
+
+// ---------- Siren ----------
+function siren(s, P) {
+  const on = s === 'on';
+  const dome = on ? P.rg('dome', [[0, '#FFD0C8'], [.5, '#FF4B3A'], [1, '#B81E14']], '#EF4438', .4, .3, .75) : P.rg('dome', [[0, '#FBFCFD'], [1, '#B4BCC7']], '#D3D9E0', .4, .3, .75);
+  let r = '';
+  if (on) {
+    r += P.halo('halo', '#FF4B3A', 32, 30, 32, .6);
+    const rays = [-150, -120, -90, -60, -30].map(a => { const t = a * Math.PI / 180; return `<path d="M${(32 + 20 * Math.cos(t)).toFixed(1)} ${(34 + 20 * Math.sin(t)).toFixed(1)}L${(32 + 26 * Math.cos(t)).toFixed(1)} ${(34 + 26 * Math.sin(t)).toFixed(1)}"/>`; }).join('');
+    r += `<g class="hm-rays" ${o(32, 34)} stroke="#FF5A3A" stroke-width="2.6" stroke-linecap="round">${rays}</g>`;
+  }
+  r += `<path d="M18 46V34a14 14 0 0 1 28 0v12Z" fill="${dome}"${on ? '' : ` stroke="${LINE}"`}/>`;
+  if (on) r += `<path d="M24 46V34a8 8 0 0 1 4-7" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".55" class="hm-twinkle"/>`;
+  else r += P.hi(`<path d="M24 44V34a8 8 0 0 1 4-7" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".8"/>`);
+  r += `<rect x="13" y="46" width="38" height="8" rx="3" fill="${P.lg('base', [[0, '#5A6372'], [1, '#353C47']], '#454D59')}"/>`;
+  r += P.hi(`<rect x="15" y="47" width="34" height="2" rx="1" fill="#fff" opacity=".18"/>`);
+  return r;
+}
+
+// ---------- Person ----------
+function person(s, P) {
+  const home = s === 'home';
+  const bg = home ? P.lg('bg', [[0, '#FFE3B0'], [1, '#F2A33A']], '#F5B54A') : P.lg('bg', [[0, '#E9EDF1'], [1, '#B4BCC7']], '#C9D0D9');
+  const fig = home ? P.lg('fig', [[0, '#FFFFFF'], [1, '#FFF1DA']], '#FFFFFF') : P.lg('fig', [[0, '#FFFFFF'], [1, '#E3E8EE']], '#F5F7F9');
+  let r = '';
+  if (home) r += P.halo('halo', '#FFB84D', 30, 30, 30, .35, '');
+  r += `<circle cx="30" cy="32.5" r="23" fill="${SHADOW}"/><circle cx="30" cy="30" r="23" fill="${bg}"/>`;
+  r += `<defs><clipPath id="${home ? 'pc-h' : 'pc-a'}${P.soft ? 'g' : 'c'}"><circle cx="30" cy="30" r="23"/></clipPath></defs>`;
+  r += `<g clip-path="url(#${home ? 'pc-h' : 'pc-a'}${P.soft ? 'g' : 'c'})" fill="${fig}"><circle cx="30" cy="24" r="8.5"/><path d="M12 56c0-11 8-18 18-18s18 7 18 18Z"/></g>`;
+  if (home) r += homeBadge(47, 48, '#22B46A');
+  else r += badge(47, 48, '#3A8DFF', `<path d="M47 52.5s-4-3.7-4-6.6a4 4 0 0 1 8 0c0 2.9-4 6.6-4 6.6Z" fill="#fff"/><circle cx="47" cy="45.9" r="1.4" fill="#3A8DFF"/>`);
+  return r;
+}
+
+// ---------- Ceiling detector (smoke, CO) ----------
+function detector(P, active, c, haloC) {
+  let r = '';
+  if (active) r += P.halo('halo', haloC, 32, 30, 31, .5);
+  r += `<ellipse cx="32" cy="22.5" rx="23" ry="9" fill="${SHADOW}"/>`;
+  r += `<path d="M9 18a23 7 0 0 0 46 0v3a23 9 0 0 1-46 0Z" fill="${P.lg('rim', [[0, '#E3E8EE'], [1, '#B4BCC7']], '#C9D0D9')}"/>`;
+  r += `<ellipse cx="32" cy="18" rx="23" ry="7" fill="${whiteBody(P)}" stroke="${LINE}"/>`;
+  r += `<g fill="none" stroke="#9AA3AF" stroke-opacity=".5" stroke-width="1"><ellipse cx="32" cy="18" rx="15" ry="4.4"/><ellipse cx="32" cy="18" rx="8" ry="2.4"/></g>`;
+  r += `<circle cx="32" cy="18" r="1.8" fill="${active ? c : '#22D877'}"${active ? ' class="hm-twinkle" style="animation-duration:.8s"' : ''}/>`;
+  return r;
+}
+function smoke(s, P) {
+  const on = s === 'detected';
+  let r = detector(P, on, '#FF3B30', '#FF4B3A');
+  if (on) r += `<g fill="#9AA3AF"><circle class="hm-bubble" cx="24" cy="44" r="5"/><circle class="hm-bubble" style="animation-delay:-.7s" cx="34" cy="46" r="6.5"/><circle class="hm-bubble" style="animation-delay:-1.3s" cx="43" cy="43" r="4.5"/></g>` + alertBadge(48, 52);
+  else r += `<path d="M22 42c4-2.5 8 2.5 12 0s8 0 8 0" fill="none" stroke="#C9D0D9" stroke-width="2" stroke-linecap="round" opacity=".6"/>`;
+  return r;
+}
+function co(s, P) {
+  const on = s === 'detected';
+  let r = detector(P, on, '#FF3B30', '#FF4B3A');
+  r += `<rect x="19" y="34" width="26" height="15" rx="5" fill="${on ? '#EF4438' : '#E3E8EE'}" stroke="${on ? 'none' : LINE}"/>`;
+  r += `<g fill="none" stroke="${on ? '#fff' : '#6F7884'}" stroke-width="2.4" stroke-linecap="round"><path d="M29 38.3a4.2 4.2 0 1 0 0 6.4"/><circle cx="36.6" cy="41.5" r="3.6"/></g>`;
+  if (on) r += alertBadge(48, 52);
+  return r;
+}
+
+// ---------- Leak sensor ----------
+function leak(s, P) {
+  const wet = s === 'wet';
+  let r = '';
+  if (wet) {
+    r += P.halo('halo', '#3AA0FF', 32, 46, 28, .45);
+    r += `<ellipse cx="32" cy="52" rx="26" ry="6" fill="${P.rg('puddle', [[0, '#9EDCFF'], [1, '#2D8FE0']], '#56AEF0', .5, .4, .7)}" class="hm-breathe"/>`;
+  }
+  r += `<path class="${wet ? 'hm-drip2' : ''}" d="M32 6c-5 7.5-7.5 11-7.5 14.5a7.5 7.5 0 0 0 15 0C39.5 17 37 13.5 32 6Z" fill="${wet ? P.lg('drop', [[0, '#9EDCFF'], [1, '#2D8FE0']], '#3A98E8') : P.lg('drop', [[0, '#F2F5F8'], [1, '#B9C2CC']], '#D2D8E0')}"${wet ? '' : ` stroke="${LINE}"`}/>`;
+  r += `<rect x="14" y="${wet ? 39 : 40.5}" width="36" height="12" rx="6" fill="${SHADOW}"/>`;
+  r += `<rect x="14" y="38" width="36" height="12" rx="6" fill="${whiteBody(P)}" stroke="${LINE}"/>`;
+  r += `<g fill="#8D96A2"><circle cx="22" cy="49.5" r="1.4"/><circle cx="42" cy="49.5" r="1.4"/></g>`;
+  r += ledDot(32, 44, wet ? '#3A8DFF' : '#22D877', wet ? 'hm-twinkle' : '');
+  if (wet) r += alertBadge(49, 14, '#3A8DFF');
+  return r;
+}
+
+// ---------- Gas detector ----------
+function gas(s, P) {
+  const on = s === 'detected';
+  let r = '';
+  if (on) r += P.halo('halo', '#FFB020', 32, 32, 31, .5);
+  r += shadowed(13, 9, 38, 46, 9, whiteBody(P));
+  r += `<g fill="#9AA3AF" opacity=".5">${Array.from({ length: 3 }, (_, i) => `<rect x="21" y="${15 + i * 4}" width="22" height="1.8" rx=".9"/>`).join('')}</g>`;
+  const fl = on ? P.lg('flame', [[0, '#FFE58A'], [.55, '#FFAE1A'], [1, '#F08A2E']], '#FFB020') : P.lg('flame', [[0, '#E3E8EE'], [1, '#B4BCC7']], '#C9D0D9');
+  r += `<g${on ? ` class="hm-flicker" ${o(32, 47)}` : ''}><path d="M32 28c3.6 4.5 7.5 7 7.5 12a7.5 7.5 0 0 1-15 0c0-3 1.8-5 3.4-7 .4 2 1.3 3.2 2.5 3.8-.4-3 .3-6 1.6-8.8Z" fill="${fl}"/></g>`;
+  r += ledDot(42.5, 49.5, on ? '#FF3B30' : '#22D877', on ? 'hm-twinkle' : '');
+  if (on) r += alertBadge(49, 50);
+  return r;
+}
+
+// ---------- Problem (device health) ----------
+function problem(s, P) {
+  const bad = s === 'problem';
+  const screen = P.lg('screen', [[0, '#2C3443'], [1, '#10141B']], '#1D232E');
+  let r = '';
+  if (bad) r += P.halo('halo', '#FF4B3A', 32, 30, 31, .5);
+  r += `<g${bad ? ' class="hm-shake"' : ''}>`;
+  r += shadowed(9, 12, 46, 36, 8, whiteBody(P));
+  r += `<rect x="14" y="17" width="36" height="26" rx="4" fill="${screen}"/>`;
+  r += bad ? `<path d="M15 32h7l3-7 5 13 4-10 3 4h12" fill="none" stroke="#FF5A4A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>`
+    : `<path d="M15 31h9l2.5-4 3.5 8 3-6 2 2h14" fill="none" stroke="#33C27F" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>`;
+  r += `<rect x="26" y="50" width="12" height="4" rx="2" fill="#8D96A2"/></g>`;
+  r += bad ? alertBadge(49, 49) : checkBadge(49, 49);
+  return r;
+}
+
+// ---------- Connectivity ----------
+function connectivity(s, P) {
+  const up = s === 'connected';
+  let r = '';
+  if (up) r += P.halo('halo', '#2CD3C0', 32, 24, 26, .35);
+  const arcs = [[18, 8], [12, 13.5], [6, 19]].map(([r0], i) => `<path d="M${32 - r0} ${30 - r0 * .25}a${r0} ${r0} 0 0 1 ${2 * r0} 0" ${up ? `class="hm-twinkle" style="animation-delay:${-.4 * (2 - i)}s"` : ''}/>`).join('');
+  r += `<g fill="none" stroke="${up ? '#20B2AC' : '#B4BCC7'}" stroke-width="3.2" stroke-linecap="round">${arcs}</g>`;
+  r += `<circle cx="32" cy="31" r="2.6" fill="${up ? '#20B2AC' : '#B4BCC7'}"/>`;
+  r += shadowed(10, 38, 44, 15, 6, whiteBody(P));
+  r += `<g fill="#8D96A2"><rect x="16" y="33" width="2" height="6" rx="1"/><rect x="46" y="33" width="2" height="6" rx="1"/></g>`;
+  for (const [x, i] of [[18, 0], [24, 1], [30, 2]]) r += ledDot(x, 45.5, up ? '#22D877' : i === 0 ? '#EF4438' : '#A3ACB8', up ? 'hm-twinkle' : '');
+  if (!up) r += slashBadge(48, 14);
+  return r;
+}
+
+// ---------- Battery ----------
+function battery(s, P) {
+  const lvl = { full: 1, half: .55, low: .22, empty: .06, charging: .62 }[s];
+  const c = { full: [[0, '#8BEAB4'], [1, '#22B46A']], half: [[0, '#8BEAB4'], [1, '#22B46A']], low: [[0, '#FFDC80'], [1, '#F59E0B']], empty: [[0, '#FFA293'], [1, '#EF4438']], charging: [[0, '#8BEAB4'], [1, '#22B46A']] }[s];
+  const flat = { full: '#22B46A', half: '#22B46A', low: '#F59E0B', empty: '#EF4438', charging: '#22B46A' }[s];
+  const fill = P.lg('cell', c, flat, 0, 0, 0, 1);
+  let r = '';
+  if (s === 'charging') r += P.halo('halo', '#2EDB86', 32, 32, 30, .4);
+  if (s === 'empty') r += P.halo('halo', '#FF4B3A', 32, 32, 30, .35);
+  r += shadowed(6, 18, 46, 28, 7, whiteBody(P));
+  r += `<rect x="52" y="26" width="5" height="12" rx="2" fill="#8D96A2"/>`;
+  const w = 38 * lvl;
+  r += `<rect x="10" y="22" width="38" height="20" rx="4" fill="#E3E8EE"/>`;
+  r += `<g${s === 'charging' ? ` class="hm-breathe"` : ''}><rect x="10" y="22" width="${w.toFixed(1)}" height="20" rx="4" fill="${fill}"/></g>`;
+  r += P.hi(`<rect x="12" y="24" width="${Math.max(2, w - 4).toFixed(1)}" height="4" rx="2" fill="#fff" opacity=".35"/>`);
+  if (s === 'charging') r += `<path d="M31.5 23.5 24.5 33h6l-1.6 7.5 7.6-10.5h-6Z" fill="#fff" stroke="#1E9C5A" stroke-width="1" stroke-linejoin="round"/>`;
+  if (s === 'empty') r += alertBadge(48, 49);
+  return r;
+}
+
+// ---------- Running (machine) ----------
+function gearPath(cx, cy, R, teeth) {
+  const pts = [];
+  for (let i = 0; i < teeth * 2; i++) {
+    const rr = i % 2 ? R * .78 : R;
+    for (const da of [-.32, .32]) {
+      const a = (i + .5 + da) * Math.PI / teeth;
+      pts.push(`${(cx + rr * Math.cos(a)).toFixed(2)} ${(cy + rr * Math.sin(a)).toFixed(2)}`);
+    }
+  }
+  return `M${pts.join('L')}Z`;
+}
+function running(s, P) {
+  const on = s === 'running';
+  const g1 = on ? P.lg('g1', [[0, '#86F3DA'], [1, '#1487A5']], '#20B2AC') : P.lg('g1', [[0, '#E3E8EE'], [1, '#A7B0BC']], '#B4BCC7');
+  const g2 = on ? P.lg('g2', [[0, '#FFE58A'], [1, '#F2A33A']], '#F5B54A') : P.lg('g2', [[0, '#E3E8EE'], [1, '#A7B0BC']], '#C9D0D9');
+  let r = '';
+  if (on) r += P.halo('halo', '#2CD3C0', 32, 32, 31, .4);
+  const big = `<path d="${gearPath(25, 27, 16, 9)}" fill="${g1}"/><circle cx="25" cy="27" r="5.5" fill="#fff"/><circle cx="25" cy="27" r="2.4" fill="${on ? '#1487A5' : '#8D96A2'}"/>`;
+  const small = `<path d="${gearPath(44.5, 44.5, 10.5, 7)}" fill="${g2}"/><circle cx="44.5" cy="44.5" r="3.6" fill="#fff"/>`;
+  r += on ? `<g class="hm-spin-slow" style="animation-duration:5s;transform-origin:25px 27px">${big}</g><g class="hm-spin-slow" style="animation-duration:3.9s;animation-direction:reverse;transform-origin:44.5px 44.5px">${small}</g>` : big + small;
+  return r;
+}
+
+// ---------- Vibration ----------
+function vibration(s, P) {
+  const on = s === 'detected';
+  let r = '';
+  if (on) {
+    r += P.halo('halo', '#FFB020', 32, 32, 30, .4);
+    r += `<g fill="none" stroke="#F2A33A" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" class="hm-twinkle" style="animation-duration:.9s"><path d="M8 22l3 4-3 4 3 4-3 4 3 4"/><path d="M56 22l-3 4 3 4-3 4 3 4-3 4"/></g>`;
+  }
+  r += `<g${on ? ' class="hm-shake" style="animation-duration:.6s"' : ''}>`;
+  r += shadowed(17, 14, 30, 36, 9, whiteBody(P));
+  r += `<g fill="none" stroke="${on ? '#F2A33A' : '#9AA3AF'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"${on ? '' : ' opacity=".6"'}><path d="M22 32h4l2.5-6 3.5 12 3-9 2 3h5"/></g>`;
+  r += ledDot(32, 44, on ? '#F2A33A' : '#22D877') + `</g>`;
+  return r;
+}
+
+// ---------- Sound ----------
+function sound(s, P) {
+  const on = s === 'detected';
+  const mic = on ? P.lg('mic', [[0, '#D9CCFF'], [1, '#8B5CF6']], '#A98BFF') : P.lg('mic', [[0, '#FFFFFF'], [1, '#C9D0DA']], '#E3E7ED');
+  let r = '';
+  if (on) {
+    r += P.halo('halo', '#9B6BFF', 32, 26, 30, .45);
+    for (const d of [0, -1]) r += `<g class="hm-ping" style="transform-origin:32px 24px;animation-delay:${d}s" fill="none" stroke="#8B5CF6" stroke-width="2.2" stroke-linecap="round"><path d="M15 15a20 20 0 0 0 0 18"/><path d="M49 15a20 20 0 0 1 0 18"/></g>`;
+  }
+  r += `<rect x="24" y="7" width="16" height="28" rx="8" fill="${mic}" stroke="${LINE}"/>`;
+  r += `<g stroke="${on ? '#fff' : '#9AA3AF'}" stroke-opacity=".6" stroke-width="1.4" stroke-linecap="round"><path d="M28 15h8M28 19.5h8M28 24h8"/></g>`;
+  r += P.hi(`<path d="M27.5 11v6" stroke="#fff" stroke-width="1.6" stroke-linecap="round" opacity=".8"/>`);
+  r += `<path d="M18 28a14 14 0 0 0 28 0" fill="none" stroke="#8D96A2" stroke-width="3" stroke-linecap="round"/><path d="M32 42v9M24 53h16" stroke="#8D96A2" stroke-width="3" stroke-linecap="round"/>`;
+  return r;
+}
+
+// ---------- Update ----------
+function update(s, P) {
+  const tile = s === 'available' ? P.lg('tile', [[0, '#9CC8FF'], [1, '#2D6FD8']], '#3A8DFF', 0, 0, 1, 1)
+    : s === 'installing' ? P.lg('tile', [[0, '#C4B0FF'], [1, '#6D5BD6']], '#8B7BFF', 0, 0, 1, 1)
+    : P.lg('tile', [[0, '#E9EDF1'], [1, '#B4BCC7']], '#C9D0D9', 0, 0, 1, 1);
+  let r = '';
+  if (s !== 'up_to_date') r += P.halo('halo', s === 'available' ? '#3AA0FF' : '#9B6BFF', 32, 30, 30, .4);
+  r += `<rect x="10" y="10.5" width="42" height="42" rx="12" fill="${SHADOW}"/><rect x="10" y="8" width="42" height="42" rx="12" fill="${tile}"/>`;
+  r += P.hi(`<rect x="13" y="10.5" width="36" height="7" rx="3.5" fill="#fff" opacity=".22"/>`);
+  if (s === 'available') r += `<g class="hm-bob" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M31 18v16M24 28l7 7 7-7"/></g><path d="M21 40h20" stroke="#fff" stroke-width="3.4" stroke-linecap="round"/><circle cx="50" cy="11" r="5" fill="#EF4438" stroke="#fff" stroke-width="2"/>`;
+  else if (s === 'installing') r += `<circle cx="31" cy="29" r="11" fill="none" stroke="#fff" stroke-opacity=".3" stroke-width="3.4"/><circle cx="31" cy="29" r="11" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-dasharray="24 70" class="hm-spin" style="transform-origin:31px 29px"/>`;
+  else r += `<g fill="none" stroke="#6F7884" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M31 18v14M24 25l7 7 7-7"/><path d="M21 40h20"/></g>` + checkBadge(49, 49);
+  return r;
+}
+
+// ---------- Humidity ----------
+function humidity(s, P) {
+  const cfg = {
+    humid: [[[0, '#9EDCFF'], [1, '#2D6FD8']], '#3A8DFF', 16, '#3AA0FF'],
+    comfortable: [[[0, '#8BEAB4'], [1, '#22B46A']], '#2FBF77', 30, null],
+    dry: [[[0, '#FFDC80'], [1, '#F59E0B']], '#F5A524', 42, '#FFB020'],
+  }[s];
+  const fill = P.lg('water', cfg[0], cfg[1]);
+  const drop = 'M32 6c-9 12.5-15 20-15 28.5a15 15 0 0 0 30 0C47 26 41 18.5 32 6Z';
+  const cid = `hc-${s}-${P.soft ? 'g' : 'c'}`;
+  let r = '';
+  if (cfg[3]) r += P.halo('halo', cfg[3], 32, 36, 28, .4, '');
+  r += `<defs><clipPath id="${cid}"><path d="${drop}"/></clipPath></defs>`;
+  r += `<path d="${drop}" transform="translate(0 2.5)" fill="${SHADOW}"/><path d="${drop}" fill="${whiteBody(P)}" stroke="${LINE}"/>`;
+  r += `<g clip-path="url(#${cid})"><g${s === 'humid' ? ` class="hm-rise" ${o(32, 50)}` : ''}><path d="M10 ${cfg[2]}c4-2 8 2 12 0s8-2 12 0 8 2 12 0 8-2 12 0V52H10Z" fill="${fill}"/></g></g>`;
+  r += P.hi(`<path d="M24 30c0-4 2.5-8 5-11" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".8"/>`);
+  if (s === 'dry') r += `<path d="M27 38l3 3-2 3 3 3" fill="none" stroke="#B86E00" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" opacity=".7"/>`;
+  return r;
+}
+
+// ---------- Air quality ----------
+function air(s, P) {
+  const c = { good: ['#22B46A', '#2EDB86'], fair: ['#F59E0B', '#FFB020'], poor: ['#EF4438', '#FF4B3A'] }[s];
+  let r = '';
+  r += P.halo('halo', c[1], 32, 32, 30, s === 'poor' ? .5 : .3, s === 'poor' ? 'hm-breathe' : '');
+  r += `<circle cx="32" cy="34.5" r="24" fill="${SHADOW}"/><circle cx="32" cy="32" r="24" fill="${whiteBody(P)}" stroke="${LINE}"/>`;
+  r += `<g fill="none" stroke="${c[0]}" stroke-width="3" stroke-linecap="round"><path d="M16 26h18a5 5 0 1 0-5-5"/><path d="M16 33h26a5 5 0 1 1-5 5"/><path d="M16 40h10"/></g>`;
+  if (s !== 'good') {
+    const dots = s === 'poor' ? [[22, 19, 1.8], [44, 24, 2.2], [40, 46, 1.6], [24, 47, 2], [48, 36, 1.5]] : [[44, 23, 1.8], [24, 47, 1.6]];
+    r += `<g fill="${c[0]}">${dots.map(([x, y, rr], i) => `<circle cx="${x}" cy="${y}" r="${rr}" class="hm-twinkle" style="animation-delay:${-i * .5}s"/>`).join('')}</g>`;
+  } else r += `<path d="M38 46c0-4.5 3-7 8-7 0 4.8-3 7-8 7Z" fill="${P.lg('leaf', [[0, '#A8F2C8'], [1, '#2DBE76']], '#3DCB85', 0, 1, 1, 0)}"/>`;
+  return r;
+}
+
 const DEVICES = [
   { key: 'light', name: 'Light', fn: light, states: ['on', 'dim', 'off'] },
   { key: 'lock', name: 'Lock', fn: lock, states: ['locked', 'unlocked', 'jammed'] },
@@ -495,6 +1086,34 @@ const DEVICES = [
   { key: 'lux', name: 'Light sensor', fn: lux, states: ['bright', 'dim', 'dark'] },
   { key: 'motion', name: 'Motion sensor', fn: motion, states: ['detected', 'clear'] },
   { key: 'temp', name: 'Temperature sensor', fn: temp, states: ['hot', 'comfortable', 'cold'] },
+  { key: 'window', name: 'Window', fn: windowIcon, states: ['closed', 'open'] },
+  { key: 'garage', name: 'Garage door', fn: garage, states: ['closed', 'open', 'opening', 'closing'] },
+  { key: 'gate', name: 'Gate', fn: gate, states: ['closed', 'open', 'opening', 'closing'] },
+  { key: 'curtain', name: 'Curtains', fn: curtain, states: ['closed', 'partial', 'open', 'opening', 'closing'] },
+  { key: 'tv', name: 'TV', fn: tv, states: ['playing', 'paused', 'on', 'off'] },
+  { key: 'speaker', name: 'Speaker', fn: speaker, states: ['playing', 'paused', 'on', 'off'] },
+  { key: 'vacuum', name: 'Robot vacuum', fn: vacuum, states: ['cleaning', 'returning', 'docked', 'paused', 'idle', 'error'] },
+  { key: 'mower', name: 'Robot mower', fn: mower, states: ['mowing', 'returning', 'docked', 'paused', 'error'] },
+  { key: 'humidifier', name: 'Humidifier', fn: humidifier, states: ['humidifying', 'drying', 'idle', 'off'] },
+  { key: 'water_heater', name: 'Water heater', fn: waterHeater, states: ['heating', 'eco', 'off'] },
+  { key: 'valve', name: 'Valve', fn: valve, states: ['open', 'closed', 'opening', 'closing'] },
+  { key: 'alarm', name: 'Alarm panel', fn: alarm, states: ['disarmed', 'armed_home', 'armed_away', 'armed_night', 'arming', 'pending', 'triggered'] },
+  { key: 'camera', name: 'Camera', fn: camera, states: ['recording', 'streaming', 'idle', 'off'] },
+  { key: 'siren', name: 'Siren', fn: siren, states: ['on', 'off'] },
+  { key: 'person', name: 'Person', fn: person, states: ['home', 'away'] },
+  { key: 'smoke', name: 'Smoke alarm', fn: smoke, states: ['detected', 'clear'] },
+  { key: 'co', name: 'CO alarm', fn: co, states: ['detected', 'clear'] },
+  { key: 'gas', name: 'Gas detector', fn: gas, states: ['detected', 'clear'] },
+  { key: 'leak', name: 'Leak sensor', fn: leak, states: ['wet', 'dry'] },
+  { key: 'problem', name: 'Problem', fn: problem, states: ['problem', 'ok'] },
+  { key: 'connectivity', name: 'Connectivity', fn: connectivity, states: ['connected', 'disconnected'] },
+  { key: 'battery', name: 'Battery', fn: battery, states: ['full', 'half', 'low', 'empty', 'charging'] },
+  { key: 'running', name: 'Running', fn: running, states: ['running', 'stopped'] },
+  { key: 'vibration', name: 'Vibration', fn: vibration, states: ['detected', 'clear'] },
+  { key: 'sound', name: 'Sound', fn: sound, states: ['detected', 'clear'] },
+  { key: 'update', name: 'Update', fn: update, states: ['available', 'installing', 'up_to_date'] },
+  { key: 'humidity', name: 'Humidity sensor', fn: humidity, states: ['humid', 'comfortable', 'dry'] },
+  { key: 'air', name: 'Air quality', fn: air, states: ['good', 'fair', 'poor'] },
 ];
 
 function build(mode, dev, state) {
