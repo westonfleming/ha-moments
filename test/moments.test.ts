@@ -5,6 +5,7 @@ import {
   defaultActive,
   momentHolds,
   switchOff,
+  clearMoment,
   lightsFor,
   validateAreaMoments,
   type AreaMomentsConfig,
@@ -177,5 +178,40 @@ describe("moments-area-moments card", () => {
     const card = await mount({ ...config, show_default: false }, setup({}));
     expect(chips(card)).toHaveLength(2);
     card.remove();
+  });
+});
+
+describe("moment_entity (the blueprint's area helper)", () => {
+  const c: AreaMomentsConfig = {
+    lights: ["light.lr"],
+    moment_entity: "input_text.lr_moment",
+    moments: [
+      { name: "Film", run: "script.lr_film" },
+      { name: "Read", run: "script.lr_read" },
+    ],
+  };
+  it("lights the moment the helper names, while the lights are on", () => {
+    const hass = setup({ "input_text.lr_moment": "Read" });
+    expect(activeMoment(hass, c, now)).toBe(1);
+    hass.states["input_text.lr_moment"].state = "";
+    expect(activeMoment(hass, c, now)).toBe(-1);
+    hass.states["input_text.lr_moment"].state = "film";
+    expect(activeMoment(hass, c, now)).toBe(0);
+    hass.states["light.lr"].state = "off";
+    expect(activeMoment(hass, c, now)).toBe(-1);
+  });
+  it("clears the helper when the moment is switched off", () => {
+    const hass = setup({ "input_text.lr_moment": "Film" });
+    expect(switchOff(hass, c.moments![0], c)).toEqual([
+      { domain: "light", service: "turn_off", data: { entity_id: ["light.lr"] } },
+      { domain: "input_text", service: "set_value", data: { entity_id: "input_text.lr_moment", value: "" } },
+    ]);
+  });
+  it("clears a dropdown helper to its None option, or leaves it without one", () => {
+    const hass = fakeHass({ "input_select.m": ["Film", { options: ["None", "Film"] }], "input_select.n": ["Film", { options: ["Film"] }] });
+    expect(clearMoment(hass, { moment_entity: "input_select.m" })).toEqual([
+      { domain: "input_select", service: "select_option", data: { entity_id: "input_select.m", option: "None" } },
+    ]);
+    expect(clearMoment(hass, { moment_entity: "input_select.n" })).toEqual([]);
   });
 });
