@@ -192,7 +192,7 @@ const buildDocs = () => {
 
 // ---- Pages written as HTML (home page, gallery).
 const PAGES = [
-  { file: "index.html", script: "landing", title: "Moments · Beautiful building blocks for Home Assistant dashboards", description: "Cards, animated device icons, a theme and backdrops for Home Assistant dashboards on iPad, iPhone, wall panels and desktops.", bodyClass: "home" },
+  { file: "index.html", script: "landing", title: "Moments · Beautiful building blocks for Home Assistant dashboards", description: "Cards, animated device icons, a theme and backdrops for Home Assistant dashboards on phones, tablets, wall panels and desktops.", bodyClass: "home" },
   { file: "gallery.html", script: "gallery", title: "Gallery · Moments", description: "Every Moments icon and card, drawn live by the real cards, each over the YAML that draws it.", active: "gallery", bodyClass: "gallery-page" },
 ];
 const buildPages = () => {

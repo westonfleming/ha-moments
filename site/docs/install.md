@@ -33,8 +33,7 @@ You should see the tile above, with your light's name and state. If the card say
 ## Make it the default on each device
 
 1. Open your Moments dashboard from the sidebar.
-2. Open your profile (your user name at the bottom of the sidebar) and under **Dashboard**, choose it. This makes it the default on that device only, so set it on the iPad and the iPhone separately.
-3. On a wall-mounted iPad, iOS **Guided Access** keeps the Home Assistant app on screen.
+2. Open your profile (your user name at the bottom of the sidebar) and under **Dashboard**, choose it. This makes it the default on that device only, so set it on each tablet and phone separately.
 
 ## Next
 

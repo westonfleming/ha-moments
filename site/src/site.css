@@ -157,7 +157,7 @@ img{max-width:100%}
 .view-grid .span2{grid-column:1 / -1}
 .phone-body{padding:58px 12px 30px;display:flex;flex-direction:column;gap:10px}
 .phone-body .floor{margin-top:10px}
-.phone .notch{position:absolute;z-index:3;top:calc(clamp(5px,.8vw,10px) + 2.2%);left:50%;transform:translateX(-50%);width:32%;height:3.6%;border-radius:999px;background:#000}
+.phone .notch{position:absolute;z-index:3;top:calc(clamp(5px,.8vw,10px) + 2.2%);left:50%;transform:translateX(-50%);width:3.4%;aspect-ratio:1;border-radius:50%;background:#000;box-shadow:0 0 0 1px rgb(255 255 255 / .06)}
 
 .controls{display:flex;flex-wrap:wrap;gap:10px 14px;justify-content:center;margin:72px auto 0;padding:0 var(--gutter)}
 .hint{text-align:center;color:var(--muted);font-size:.9rem;margin:14px 0 0}

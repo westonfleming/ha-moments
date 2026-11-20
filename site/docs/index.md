@@ -32,7 +32,7 @@ Every card on this site is the real card, drawn against a made-up home. Tap them
 ## Requirements
 
 - Home Assistant 2025.1 or newer.
-- Any device that runs the Home Assistant app or a modern browser. Moments is designed for iPad and iPhone first, and works just as well on wall panels and desktops.
+- Any device that runs the Home Assistant app or a modern browser. Moments works on phones, tablets, wall panels and desktops, whatever they run.
 
 ## How the docs are organised
 

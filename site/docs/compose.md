@@ -92,7 +92,7 @@ views:
             progress: position
 ```
 
-The [home page](../index.html) shows this layout on an iPad, built from the same cards.
+The [home page](../index.html) shows this layout on a tablet, built from the same cards.
 
 ## More views
 
