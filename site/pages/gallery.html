@@ -1,0 +1,40 @@
+<div class="layout">
+  <nav class="toc" aria-label="Contents">
+    <ul>
+      <li><a href="#icons">Icons</a><ul><li><a href="#icons">44 sets, 146 states</a></li></ul></li>
+    </ul>
+    <ul id="toc-cards"></ul>
+    <ul>
+      <li><a href="#theme">Theme and backdrops</a></li>
+      <li><a href="#compose">Putting it together</a></li>
+    </ul>
+  </nav>
+  <main id="main">
+    <div class="intro">
+      <h1>Gallery</h1>
+      <p>Every icon and card in Moments, drawn by the real cards against a sample home. Under each one is YAML you can paste into a dashboard: it is the exact config that draws the card above it, with every option shown and commented. The cards respond, so try the switches and chips.</p>
+      <div class="facts"><span><b>44</b>icon sets</span><span><b>146</b>icon states</span><span><b>15</b>cards</span><span><b>2</b>icon styles</span><span><b>8</b>backdrops</span></div>
+      <div class="gallery-bar">
+        <div class="seg" role="group" aria-label="Icon style"><span class="lbl">Icons</span><button type="button" data-icons="glow" aria-pressed="true">Glow</button><button type="button" data-icons="crisp" aria-pressed="false">Crisp</button></div>
+      </div>
+    </div>
+
+    <section id="icons" class="group">
+      <div class="group-head"><h2>Icons</h2><p>Animated, state-aware icons drawn by <code>moments-tile</code>. The set is picked from the entity's domain and device class, so every common Home Assistant type gets one; appliances are named with <code>icon_set</code>. Icons only move while the device is active, and stop when Reduce Motion is on. Glow is the default; switch to Crisp above, per tile with <code>icon_style</code>, or theme-wide with <code>moments-icon-style</code>.</p></div>
+      <div class="icon-grid" id="icon-grid"></div>
+    </section>
+
+    <div id="card-sections"></div>
+
+    <section id="theme" class="group">
+      <div class="group-head"><h2>Theme and backdrops</h2><p>The cards look right in any theme. The Moments theme gives the whole dashboard, stock cards included, the same look, and sets the defaults for icon style and tile surface. Eight backdrops ship with each release; copy them to <code>/config/www/moments/backdrops/</code>. <a href="docs/theme.html">Theme docs</a>.</p></div>
+      <div class="backdrop-grid" id="backdrop-grid"></div>
+      <div id="theme-code"></div>
+    </section>
+
+    <section id="compose" class="group">
+      <div class="group-head"><h2>Putting it together</h2><p>An area view keeps the same sections in the same order in every area: header, lighting, climate and air, windows and doors, devices. The Home view has one section per floor, and each area card opens the view whose path is its area id. <a href="docs/compose.html">Compose a dashboard</a>.</p></div>
+      <div id="compose-code"></div>
+    </section>
+  </main>
+</div>

@@ -12,7 +12,18 @@ To try a build on your Home Assistant, copy `dist/ha-moments.js` to `/config/www
 
 ## Configuration
 
-Moments ships no home-specific behaviour. Anything particular to one install (entities, rooms, users, times) is a config option with a sensible default. When you add or change an option, update the annotated example in [examples/](examples/) and the README options table in the same PR.
+Moments ships no home-specific behaviour. Anything particular to one install (entities, rooms, users, times) is a config option with a sensible default. When you add or change an option, update the annotated example in [examples/](examples/), the README options table and the website docs ([site/docs/](site/docs/)) in the same PR.
+
+## Website
+
+The website in [site/](site/) is the showcase and the docs: the home page, a gallery of every card and icon, and the docs in Markdown. Its cards are the real cards from `src/`, drawn against a sample home in `site/src/mock-home.js`.
+
+```sh
+npm run site:serve   # http://localhost:4173, rebuilds on change
+npm run site         # builds site/_site
+```
+
+The Website workflow publishes it to GitHub Pages on every push to `main` that touches it, and builds it as a check on pull requests. The site is not part of a release: the release ships `dist/ha-moments.js` and the backdrops, and `.gitattributes` keeps `site/` out of the source archives.
 
 ## Release
 

@@ -1,0 +1,223 @@
+<main id="main">
+<section class="hero">
+  <div class="hero-bg" aria-hidden="true"></div>
+  <div class="wrap">
+    <div class="hero-copy">
+      <span class="eyebrow"><i></i>Open source · for Home Assistant 2025.1+</span>
+      <h1>Dashboards that feel like <em>home</em>.</h1>
+      <p class="lede">Moments is a set of cards, animated device icons, a theme and backdrops for Home Assistant. Compose them into your own dashboards, for the tablet on the wall, the phone in your pocket and the screen on your desk.</p>
+      <div class="cta">
+        <a class="btn primary" href="docs/install.html">Install Moments</a>
+        <a class="btn" href="gallery.html">See every card</a>
+      </div>
+    </div>
+
+    <div class="showcase">
+      <div class="devices">
+        <figure class="device tablet" id="tablet" aria-label="An area view on a tablet, drawn by the real Moments cards">
+          <div class="screen ha">
+            <div class="viewport" data-w="1194" data-h="834" style="width:1194px;height:834px">
+              <div class="ha-toolbar">
+                <span class="burger" aria-hidden="true"></span>
+                <span class="title">Home</span>
+                <div class="ha-tabs" id="tablet-tabs" role="tablist" aria-label="Area views"></div>
+                <span class="spacer"></span>
+                <span class="dot" aria-hidden="true">S</span>
+              </div>
+              <div id="tablet-view" class="tablet-view" style="flex:1;min-height:0;display:flex"></div>
+            </div>
+          </div>
+        </figure>
+        <figure class="device phone" aria-label="The Home view on a phone, drawn by the real Moments cards">
+          <span class="notch" aria-hidden="true"></span>
+          <div class="screen ha">
+            <div class="viewport" data-w="393" data-h="852" style="width:393px;height:852px">
+              <div id="phone-view" style="flex:1;min-height:0;display:flex"></div>
+            </div>
+          </div>
+        </figure>
+      </div>
+
+      <div class="controls">
+        <div class="seg" role="group" aria-label="Backdrop"><span class="lbl">Backdrop</span><button type="button" data-backdrop="mist" aria-pressed="false">Mist</button><button type="button" data-backdrop="aurora" aria-pressed="true">Aurora</button><button type="button" data-backdrop="horizon" aria-pressed="false">Horizon</button><button type="button" data-backdrop="contour" aria-pressed="false">Contour</button><button type="button" data-backdrop="none" aria-pressed="false">None</button></div>
+        <div class="seg" role="group" aria-label="Surface"><span class="lbl">Surface</span><button type="button" data-surface="solid" aria-pressed="false">Solid</button><button type="button" data-surface="frosted" aria-pressed="false">Frosted</button><button type="button" data-surface="glass" aria-pressed="true">Glass</button></div>
+        <div class="seg" role="group" aria-label="Icon style"><span class="lbl">Icons</span><button type="button" data-icons="glow" aria-pressed="true">Glow</button><button type="button" data-icons="crisp" aria-pressed="false">Crisp</button></div>
+      </div>
+      <p class="hint">It's all live. Switch a light, try a moment, or tap an area on the phone to open its view on the tablet.</p>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="icons">
+  <div class="wrap">
+    <div class="band-head">
+      <span class="kicker">Animated icons</span>
+      <h2>Icons that show what your home is doing.</h2>
+      <p>Every common Home Assistant device gets an icon that follows its state. The washer spins while it runs, the blind lowers in 10% steps, the lock turns red when it jams. Icons only move while something is happening, and stop when Reduce Motion is on.</p>
+    </div>
+    <ul class="icon-strip" id="icon-strip"></ul>
+    <div class="stats">
+      <div><b>44</b><span>icon sets</span></div>
+      <div><b>146</b><span>states</span></div>
+      <div><b>2</b><span>styles, Glow and Crisp</span></div>
+      <div><b>Auto</b><span>picked for each device</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="band">
+  <div class="wrap split">
+    <div class="split-copy">
+      <span class="kicker">Area moments</span>
+      <h2>Moments, not a wall of scenes.</h2>
+      <p>Each area has a default, like a time-of-day scene or a motion automation. A few moments override it for a while: Movie, Reading, Dinner. One chip is lit at a time, and it stays lit only while the lights still match.</p>
+      <ul>
+        <li>A moment runs scenes, scripts, automations or buttons, in order.</li>
+        <li>Tap a lit chip to turn it off: its scripts stop and its lights go off.</li>
+        <li>Your names, your order. Nothing imported wholesale from Hue.</li>
+      </ul>
+      <a class="more" href="docs/area-moments.html">How area moments work →</a>
+    </div>
+    <div data-demo data-cols="3" data-backdrop="aurora"><script type="text/yaml">
+type: grid
+cards:
+  - type: custom:moments-tile
+    entity: light.living_room_ceiling
+    tap_action: toggle
+  - type: custom:moments-tile
+    entity: light.living_room_lamp
+    tap_action: toggle
+  - type: custom:moments-tile
+    entity: light.living_room_shelf
+    tap_action: toggle
+  - type: custom:moments-area-moments
+    grid_options:
+      columns: full
+    area: living_room
+    default:
+      name: Natural
+      icon: mdi:weather-sunny
+      run: scene.living_room_natural_light
+    moments:
+      - name: Movie
+        icon: mdi:movie-open
+        run: scene.living_room_movie
+      - name: Reading
+        icon: mdi:book-open-variant
+        run: scene.living_room_reading
+        lights: [light.living_room_lamp]
+      - name: Dinner
+        icon: mdi:silverware-fork-knife
+        run: [scene.living_room_dinner, script.dining_music]
+        dynamic: true
+</script></div>
+  </div>
+</section>
+
+<section class="band">
+  <div class="wrap split flip">
+    <div class="split-copy">
+      <span class="kicker">Built on areas and floors</span>
+      <h2>One line of config. The area does the rest.</h2>
+      <p>Give a card an area and it finds that area's lights, temperature, humidity, air quality, presence and alarms on its own. Override any part, or hide it with <code>false</code>.</p>
+      <ul>
+        <li>Area headers with readings, red alert chips and an all-lights switch.</li>
+        <li>Area cards for the Home view, over a faded photo of the area.</li>
+        <li>Floor headings that sum up who's where and what's on.</li>
+      </ul>
+      <a class="more" href="docs/compose.html">Compose a dashboard →</a>
+    </div>
+    <div data-demo data-code><script type="text/yaml">
+type: grid
+cards:
+  - type: custom:moments-area-header
+    area: living_room
+  - type: custom:moments-area
+    area: office
+</script></div>
+  </div>
+</section>
+
+<section class="band">
+  <div class="wrap">
+    <div class="band-head">
+      <span class="kicker">Building blocks</span>
+      <h2>Fifteen cards. Your dashboard.</h2>
+      <p>Moments doesn't take over your dashboard. Mix its cards with stock cards in any view or section, and follow the same layout in every area so you always know where to look.</p>
+    </div>
+    <div data-demo data-cols="3" data-narrow1 data-backdrop="horizon"><script type="text/yaml">
+type: grid
+cards:
+  - type: custom:moments-tile
+    entity: sensor.dishwasher_operation_state
+    icon_set: dishwasher
+    name: Dishwasher
+    states:
+      running: [Run]
+      on: [Ready, Finished]
+    secondary: sensor.dishwasher_program
+    progress: sensor.dishwasher_program_progress
+    finish: sensor.dishwasher_program_finish_time
+  - type: custom:moments-metric
+    entity: sensor.office_co2
+  - type: custom:moments-tile
+    entity: cover.office_blind
+    progress: position
+  - type: custom:moments-weather
+    entity: weather.home
+    days: 4
+  - type: custom:moments-on-now
+    domains: [light, switch, fan]
+    exclude: [switch.fridge]
+  - type: custom:moments-daylight
+    title: Daylight
+    entity: sensor.outdoor_illuminance
+</script></div>
+    <p class="hint"><a href="gallery.html">Open the gallery</a> for every card and every option, with YAML you can paste.</p>
+  </div>
+</section>
+
+<section class="band">
+  <div class="wrap">
+    <div class="features">
+      <div class="feature">
+        <div class="fi"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M17 1H7a2 2 0 0 0-2 2v18a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2m0 18H7V5h10z"/></svg></div>
+        <h3>Made for touch</h3>
+        <p>Big targets, haptics in the Home Assistant app, and layouts that sit side by side on a tablet or desktop and stack on a phone.</p>
+      </div>
+      <div class="feature">
+        <div class="fi"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 18a6 6 0 0 1 0-12zm0-16A10 10 0 1 0 22 12 10 10 0 0 0 12 2"/></svg></div>
+        <h3>Light and dark</h3>
+        <p>A Moments theme with warm amber for “on”, eight backdrops, and solid, frosted or glass tiles. The cards look right in any theme too.</p>
+      </div>
+      <div class="feature">
+        <div class="fi"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M14.6 16.6 19.2 12l-4.6-4.6L16 6l6 6-6 6zm-5.2 0L4.8 12l4.6-4.6L8 6l-6 6 6 6z"/></svg></div>
+        <h3>Plain YAML</h3>
+        <p>Every option is optional and every default is sensible. Anything a device can't report is simply left out.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="get-started">
+  <div class="wrap">
+    <div class="band-head">
+      <span class="kicker">Get started</span>
+      <h2>Installed in a few minutes.</h2>
+    </div>
+    <div class="steps">
+      <div class="step"><h3>Download</h3><p>Add Moments from Home Assistant, or copy <code>ha-moments.js</code> from the latest release into <code>/config/www</code>.</p></div>
+      <div class="step"><h3>Compose</h3><p>Put your areas on floors, then paste the example Home and area views and swap in your own entities.</p></div>
+      <div class="step"><h3>Make it yours</h3><p>Add the theme and a backdrop, choose Glow or Crisp, and set it as the default dashboard on each device.</p></div>
+    </div>
+    <div class="final">
+      <h2>Ready when you are.</h2>
+      <p>Moments {{version}} is free and open source under the MIT licence.</p>
+      <div class="cta">
+        <a class="btn primary" href="docs/install.html">Install Moments</a>
+        <a class="btn" href="{{repo}}">View on GitHub</a>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
