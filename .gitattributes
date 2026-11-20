@@ -1,0 +1,3 @@
+# Keep the website out of source archives (the zip and tarball on each release).
+# Releases ship dist/ha-moments.js and the backdrops; the site is published to GitHub Pages instead.
+site/ export-ignore

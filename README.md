@@ -6,6 +6,8 @@ Building blocks for Home Assistant dashboards, on phones, tablets, wall panels a
 
 ![The home view in dark mode: areas grouped by floor, each over a faded photo](docs/home-view-dark.png)
 
+See every card live, and read the docs, on the **[Moments website](https://westonfleming.github.io/ha-moments/)**.
+
 A good place to start is a **Home** view of your areas grouped by floor, each opening an **area view** that follows the same sections in every area. [examples/home.yaml](examples/home.yaml) has both, ready to paste.
 
 ## Requirements
